@@ -102,6 +102,8 @@ ${prod.body}
 ${COMPANY_INFO}
 
 ${PRODUCT_COMMON}
+${(typeof TAKUMI_AUTHORITY!=="undefined")?"\n"+TAKUMI_AUTHORITY:""}
+${(!isCompany&&typeof DEALER_COMMISSION_INFO!=="undefined")?"\n"+DEALER_COMMISSION_INFO:""}
 
 ${HALLUCINATION_RULES}
 
@@ -113,7 +115,7 @@ ${points}
 - 本文は150〜250字以内
 - 冒頭1文は${isCompany?"対象の悩み・興味を引くフック":"施術者の「患者さんに何を提案できるか」という視点のフック"}にすること
 - 伝えるベネフィット・特徴は3点以内に絞ること
-- SEOキーワード（SPIRAL TURN／オーダーメイドインソール等、商品データ内のキーワード群から自然に）を本文に含めること
+- SEOキーワード（SPIRAL TURN／オーダーメイドインソール等、商品データ内のキーワード群から自然に）を本文に含めること${!isCompany?"\n- 取扱店向けの場合、「在庫リスクなし・ノルマなし」等の導入ハードルの低さを1点は含めること":""}
 - ハッシュタグは末尾に5〜8個（ブランド名・商品カテゴリ・悩みキーワードをバランスよく）
 - 絵文字は使用しないこと
 

@@ -107,13 +107,13 @@ td select{padding:4px 6px;font-size:12px;width:auto}
     <div class="field"><label>記事テーマ（ナレッジ未選択時・または補足）</label><input id="pl-theme" placeholder="例：外反母趾の患者説明が劇的に楽になる伝え方"></div>
     <div class="grid2">
       <div class="field"><label>対象読者</label>
-        <select id="pl-target"><option selected>セラピスト特化（1,980円標準）</option><option>一般読者向け</option></select></div>
+        <select id="pl-target"><option selected>一般読者向け（480円標準・現行主力）</option><option>セラピスト特化（800〜1,000円）</option></select></div>
       <div class="field"><label>公開パターン</label>
         <select id="pl-pattern"><option selected>無料部分＋有料部分（答えの直前で切る）</option><option>全文有料</option></select></div>
     </div>
     <div class="grid2">
       <div class="field"><label>価格</label>
-        <select id="pl-price"><option selected>1,980円</option><option>980円</option><option>2,980円</option><option>無料記事</option></select></div>
+        <select id="pl-price"><option>無料記事</option><option selected>480円（一般向け・現行標準）</option><option>800円（セラピスト向け）</option><option>1,000円（セラピスト向け上限）</option><option>2,980〜3,980円（マガジン）</option></select></div>
       <div class="field"><label>記事の長さ</label>
         <select id="pl-length"><option>3,000字程度</option><option selected>5,000字程度</option><option>8,000字以上（充実版）</option></select></div>
     </div>
@@ -163,9 +163,9 @@ td select{padding:4px 6px;font-size:12px;width:auto}
       <div class="field"><label>設計したいもの</label>
         <select id="sl-what"><option selected>タイトル案（5パターン）</option><option>無料部分の「引き」（続きが読みたくなる終わり方）</option><option>購入ボタン前の一押し文言</option><option>Threadsからの誘導投稿</option></select></div>
       <div class="field"><label>価格</label>
-        <select id="sl-price"><option selected>1,980円</option><option>980円</option><option>2,980円</option></select></div>
+        <select id="sl-price"><option selected>480円（一般向け）</option><option>800円（セラピスト向け）</option><option>1,000円（セラピスト向け上限）</option></select></div>
     </div>
-    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px"><input type="checkbox" id="sl-seminar" checked style="width:auto"> 「6,000円のセミナー内容を◯円で」の訴求を入れる</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px"><input type="checkbox" id="sl-seminar" checked style="width:auto"> 価格アンカー訴求（インソール月額等との比較）を入れる</label>
     <button class="btn primary" id="btn-gen-sales">セールス文言プロンプトを生成</button>
   </div>
   <div class="outbox">

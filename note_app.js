@@ -57,6 +57,24 @@ function kbTitle(v){
   const item=arr.find(x=>x.id===id);
   return item?item.title:null;
 }
+function personaBlockFor(v,target){
+  if(!v)return null;
+  const[kind,id]=v.split(":");
+  if(kind!=="t")return null;
+  const p=(typeof PERSONAS!=="undefined")?PERSONAS[id]:null;
+  if(!p)return null;
+  const isTherapist=target.includes("セラピスト");
+  const one=isTherapist?p.therapist:p.general;
+  if(isTherapist){
+    return `■ このテーマのペルソナ（note_reference/テーマ別ペルソナ設計より。汎用軸より優先すること）
+- ${one.name}。${one.situation}
+- 欲しい未来：${one.future}${one.hook?`\n- 有料部分への誘導フレーズ例：「${one.hook}」`:""}`;
+  }
+  return `■ このテーマのペルソナ（note_reference/一般向けペルソナ設計より。汎用軸より優先すること）
+- ${one.name}。${one.situation}
+- 切実な悩み：${one.pain}
+- 欲しい未来：${one.future}（※Howの手順は求めていない。気づき・希望に留めること。Howは有料部分でのみ展開する）`;
+}
 
 /* ================= 構成担当 ================= */
 $("#btn-gen-plan").addEventListener("click",()=>{
@@ -83,12 +101,20 @@ ${kb}`,"",HALLUCINATION_RULES,"",`■ 展開順序の再現（最重要）
   if(theme)parts.push("",`■ 記事テーマ${kb?"（補足）":""}
 ${theme}`);
 
+  const personaBlock=personaBlockFor(kv,target);
+  if(personaBlock)parts.push("",personaBlock);
+
+  parts.push("",NOTE_10RULES);
+
   parts.push("",`■ 設計の条件
 - 記事の長さ：${length}
-- 対象読者：${target}${target.includes("セラピスト")?"（施術の現場で明日から使える実用性を重視）":"（専門用語は必ず言い換え・説明を添える）"}`);
+- 対象読者：${target}${target.includes("セラピスト")?"（施術の現場で明日から使える実用性を重視）":"（専門用語は必ず言い換え・説明を添える）"}
+- 差別化は「テーマ」ではなく「切り口」で作ること（体験談・失敗談・現場トーンなど、同じテーマでも独自の見せ方にすること）`);
 
   if(isSplit&&!isFree)parts.push("",`■ 無料/有料ラインの設計（必ず提案に含めること）
-- 無料部分と有料部分の境界＝「答えの直前」で切ること（問題の深刻さ・原因の核心まで無料で見せ、具体的な解決手順の直前で有料に切り替える）
+- 無料部分の役割＝信頼構築（Why・Whatを伝え「なるほど」と思わせる。読者の悩みの正体・原因の核心まで）
+- 有料部分の役割＝迷いを終わらせる（Howを伝え「明日から使える」状態にする。具体的な手順・スクリプト）
+- 境界＝「答えの直前」で切ること
 - どの章とどの章の間で切るべきか、理由付きで提案すること
 - 無料部分の最後は「続きを読みたくなる引き」で終わる設計にすること`);
   if(!isSplit&&!isFree)parts.push("",`■ 全文有料の設計
@@ -123,6 +149,9 @@ $("#btn-gen-write").addEventListener("click",()=>{
   if(kb)parts.push("",`■ 専門知識ベース（この内容を事実の唯一の根拠とすること）
 ${kb}`,"",HALLUCINATION_RULES);
 
+  const personaBlock=personaBlockFor(kv,target);
+  if(personaBlock)parts.push("",personaBlock);
+
   parts.push("",`■ 確定した章立て
 ${outline}`,"",`■ 執筆ルール
 - 対象読者：${target}${target.includes("セラピスト")?"（現場で使える具体性・患者説明にそのまま使える言い回しを重視）":"（中学生でもわかる言葉で。専門用語には必ず短い説明を添える）"}
@@ -130,7 +159,7 @@ ${outline}`,"",`■ 執筆ルール
 - 知識ベースの比喩・エピソード（例：トマトケチャップ現象、円柱形理論など）は積極的に活用し、原文の意味を保つこと
 - 1つの見出しあたり400〜600字を目安にすること
 - 箇条書き・小見出しを適度に使い、スマホでも読みやすいリズムにすること
-- 各章の終わりに、次の章へ読み進めたくなる一文を入れること`,"",YAKKIHO_RULES,"",`【出力形式】
+- 各章の終わりに、次の章へ読み進めたくなる一文を入れること`,"",NOTE_10RULES,"",YAKKIHO_RULES,"",`【出力形式】
 Markdown形式で、見出し（##）付きで出力してください。`);
 
   const p=parts.join("\n");
@@ -176,12 +205,12 @@ $("#btn-gen-sales").addEventListener("click",()=>{
   const parts=[`あなたはNote販売のセールスライティングのプロです。以下の記事について「${what}」を作成してください。`,"",`■ 記事情報
 - テーマ：${theme}
 - 価格：${price}
-- 主な読者：セラピスト層（一般読者も一部購入する想定）`,"",`■ 設計の土台（PASONA構造）
+- 主な読者：一般ユーザー層（現行はこちらが主力。セラピスト向けは別途800〜1,000円想定）`,"",`■ 設計の土台（PASONA構造）
 - Problem（問題提起）→ Affinity（共感）→ Solution（解決策の提示）→ Narrowing（絞り込み）→ Action（行動）の流れを意識すること
 - 煽る表現ではなく、専門家としての信頼感を保つこと`,"",specific];
 
   if(useSeminar)parts.push("",`■ 価格訴求
-- 「6,000円の月1セミナーで扱っている内容を、${price}でまとめました」という価格アンカーを自然に使うこと
+- インソール月額1,690円等との比較アンカー、または「オーダーメイドインソールの知識が${price}で手に入る」という比較提示を自然に使うこと
 - 値引き感より「なぜあなたに必要か」の文脈を優先すること`);
 
   parts.push("",YAKKIHO_RULES,"",`【出力形式】
