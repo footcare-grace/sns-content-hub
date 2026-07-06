@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNS運用本社｜全体マップ</title>
+<style>
+:root{
+  --ink:#26271f;--sub:#6e6d63;--line:#e4e2d7;--bg:#2b3a2e;--card:#fff;
+  --gb-dark:#1f2f24;--gb-panel:#f8f4e3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65;min-height:100vh}
+header{background:var(--gb-dark);padding:12px 22px;display:flex;align-items:baseline;gap:12px;border-bottom:4px solid #16241a}
+header h1{font-size:16px;font-weight:700;color:#e8f0d8;letter-spacing:1px}
+header .st{font-size:11px;color:#9fb890}
+main{max-width:1150px;margin:0 auto;padding:20px 18px 60px}
+.stage{display:grid;grid-template-columns:1fr 330px;gap:16px;align-items:start}
+@media(max-width:900px){.stage{grid-template-columns:1fr}}
+.map-frame{background:#16241a;border-radius:12px;padding:12px;box-shadow:0 4px 0 #0d160f}
+canvas{width:100%;height:auto;display:block;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;cursor:pointer}
+.map-caption{color:#9fb890;font-size:11.5px;margin-top:8px;text-align:center}
+.panel{background:var(--gb-panel);border:3px solid #4a3f2a;border-radius:10px;padding:16px;box-shadow:0 4px 0 #3a3222;min-height:200px}
+.panel h2{font-size:15px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.panel .dot{width:12px;height:12px;border-radius:2px;display:inline-block;flex:none}
+.panel .duty-label{font-size:11px;font-weight:700;color:#8a5a0d;margin:12px 0 4px;letter-spacing:.5px}
+.panel ul{padding-left:18px;font-size:12.5px}
+.panel li{margin-bottom:4px}
+.panel .empty-msg{font-size:12.5px;color:#6b604a;padding:20px 4px;text-align:center}
+.go-btn{display:inline-block;margin-top:14px;background:#1e2a4a;color:#fff;font-weight:700;font-size:13px;padding:9px 18px;border-radius:8px;text-decoration:none;border:none;cursor:pointer;font-family:inherit}
+.go-btn:hover{background:#2c3d66}
+.back-btn{display:none;margin-bottom:10px;background:#4a3f2a;color:#f8f4e3;font-weight:700;font-size:12px;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:inherit}
+.back-btn.show{display:inline-block}
+.ceo-stats{font-size:12.5px;line-height:1.9}
+.ceo-stats b{color:#1e2a4a}
+.stat-row{display:flex;justify-content:space-between;border-bottom:1px dashed #cbbfa0;padding:3px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>SNS運用本社</h1>
+  <span class="st">建物をクリックして各部署へ｜デスクをクリックで業務内容</span>
+</header>
+
+<main>
+<button class="back-btn" id="btn-back">← マップに戻る</button>
+<div class="stage">
+  <div class="map-frame">
+    <canvas id="map" width="480" height="400"></canvas>
+    <p class="map-caption" id="caption">🏢 建物をクリックすると、中に入れます</p>
+  </div>
+  <div class="panel" id="panel">
+    <p class="empty-msg">ここに、クリックした部署・メンバーの情報が表示されます。<br><br>まずはマップ上の建物をクリックしてください。</p>
+  </div>
+</div>
+</main>
+<script src="office_app.js"></script>
+</body>
+</html>
