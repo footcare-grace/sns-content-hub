@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noteサムネイルメーカー</title>
+<style>
+:root{
+  --ink:#26271f;--sub:#6e6d63;--line:#e4e2d7;--bg:#faf9f4;--card:#fff;
+  --navy:#1e2a4a;--orange:#e8681a;
+  --ok:#1d6e5a;--ok-soft:#e4f1ec;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65}
+header{background:var(--navy);padding:13px 22px;display:flex;align-items:baseline;gap:12px}
+header h1{font-size:16.5px;font-weight:600;color:#fff}
+header .st{font-size:11.5px;color:#aeb9d6}
+main{max-width:1100px;margin:0 auto;padding:22px 24px 70px}
+.grid{display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start}
+@media(max-width:920px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:14px}
+h3{font-size:13.5px;font-weight:600;margin-bottom:10px}
+label{display:block;font-size:12px;color:var(--sub);font-weight:600;margin-bottom:4px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px}
+.field{margin-bottom:12px}
+.hint{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
+.btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 16px;border-radius:8px;font-size:13.5px;cursor:pointer;font-family:inherit}
+.btn:hover{background:#f3f2ec}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600}
+.btn.orange{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600}
+.btn.small{padding:5px 11px;font-size:12px}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.cands{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.cand{padding:7px 11px;border:1.5px solid var(--line);border-radius:8px;background:#fff;font-size:12.5px;font-family:inherit;color:var(--ink);cursor:pointer;text-align:left;line-height:1.45}
+.cand:hover{border-color:var(--navy)}
+.cand.on{border-color:var(--navy);background:#eef1f7;font-weight:600}
+.persona-box{font-size:12px;background:#f4f6fa;border-radius:8px;padding:10px 12px;line-height:1.7;color:#33415e;margin-bottom:12px;display:none}
+.persona-box.show{display:block}
+.persona-box b{color:var(--navy)}
+#canvas-wrap{position:sticky;top:16px}
+canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:10px;background:#fff;display:block}
+.upload-zone{border:2px dashed var(--line);border-radius:9px;padding:14px;text-align:center;font-size:12.5px;color:var(--sub);cursor:pointer;margin-bottom:10px}
+.upload-zone:hover{border-color:var(--navy);color:var(--navy)}
+.outbox{margin-top:14px}
+.out-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.copy-btn{padding:7px 16px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit}
+.copy-btn.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:12.5px;line-height:1.7;background:#fcfbf7;border:1px solid var(--line);border-radius:9px;padding:14px;max-height:48vh;overflow-y:auto}
+pre.empty{color:var(--sub)}
+.mode-note{font-size:11.5px;color:var(--sub);margin-top:6px;line-height:1.6}
+</style>
+</head>
+<body>
+<header>
+  <h1>Noteサムネイルメーカー</h1>
+  <span class="st">テーマを選ぶだけ｜Canvas即完成＋イラスト合成＋AI画像プロンプト</span>
+</header>
+
+<main>
+<div class="grid">
+
+<!-- ===== 左：操作パネル ===== -->
+<div>
+  <div class="card">
+    <h3>① テーマを選ぶ</h3>
+    <div class="field">
+      <select id="theme-select"><option value="">テーマを選択してください</option></select>
+      <p class="hint">選ぶと、ペルソナとタイトル候補が自動で表示されます</p>
+    </div>
+    <div class="persona-box" id="persona-box"></div>
+  </div>
+
+  <div class="card">
+    <h3>② 文言を選ぶ・整える</h3>
+    <div class="field">
+      <label>メインタイトル（候補をクリック or 直接編集）</label>
+      <div class="cands" id="main-cands"></div>
+      <input id="main-title" placeholder="メインタイトル">
+    </div>
+    <div class="field">
+      <label>サブタイトル</label>
+      <div class="cands" id="sub-cands"></div>
+      <input id="sub-title" placeholder="サブタイトル">
+    </div>
+    <div class="field">
+      <label>バッジ（オレンジの帯に入る一言）</label>
+      <div class="cands" id="badge-cands"></div>
+      <input id="badge-text" placeholder="バッジ文言">
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>③ イラストを入れる（任意）</h3>
+    <div class="upload-zone" id="upload-zone">ここをクリックして、Gemini/ChatGPTで生成した画像を選択<br>（右側の余白に自動配置されます）</div>
+    <input type="file" id="img-input" accept="image/*" style="display:none">
+    <div class="btnrow">
+      <button class="btn small" id="btn-clear-img" style="display:none">イラストを外す</button>
+    </div>
+    <p class="mode-note">イラストなしでも完成度の高いサムネイルになります。こだわりたい記事だけ、下の「AI画像プロンプト」でイラストを作って合成してください。</p>
+  </div>
+
+  <div class="card">
+    <h3>④ 仕上げ</h3>
+    <div class="btnrow">
+      <button class="btn primary" id="btn-download">PNGをダウンロード（1280×670）</button>
+      <button class="btn orange" id="btn-gen-prompt">AI画像プロンプトを生成（Gemini/ChatGPT用）</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 右：プレビュー ===== -->
+<div id="canvas-wrap">
+  <div class="card">
+    <h3>プレビュー（自動更新）</h3>
+    <canvas id="thumb-canvas" width="1280" height="670"></canvas>
+  </div>
+  <div class="outbox" id="prompt-wrap" style="display:none">
+    <div class="out-head"><h3>AI画像生成プロンプト</h3><button class="copy-btn" id="btn-copy-prompt">コピー</button></div>
+    <pre id="out-prompt" class="empty"></pre>
+  </div>
+</div>
+
+</div>
+</main>
+<script src="knowledge_data.js"></script>
+<script src="thumb_app.js"></script>
+</body>
+</html>
