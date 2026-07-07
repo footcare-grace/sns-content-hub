@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threads運営チームハブ</title>
+<style>
+:root{
+  --ink:#33322a;--sub:#8a8676;--line:#eee7d6;--bg:#fffdf6;--card:#fff;
+  --r-strategy:#2f9e7a;--r-research:#3a9ce0;--r-plan:#e0a12a;
+  --r-edit:#8b7fe0;--r-marketing:#e08a5c;--r-secretary:#8a8676;
+  --ok:#1d9e78;--ok-soft:#e6f8f0;--warn-soft:#fff5e0;--warn:#b5790f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65}
+header{background:linear-gradient(#fff,#fbf7ea);border-bottom:1px solid var(--line);padding:13px 22px;display:flex;align-items:center;gap:12px}
+header h1{font-size:16.5px;font-weight:700;color:#2f9e7a}
+header .st{font-size:11.5px;color:var(--sub)}
+.layout{display:grid;grid-template-columns:236px 1fr;max-width:1280px;margin:0 auto;min-height:calc(100vh - 49px)}
+@media(max-width:820px){.layout{grid-template-columns:1fr}}
+
+aside{border-right:1px solid var(--line);padding:18px 10px;background:#fffefb}
+@media(max-width:820px){aside{border-right:none;border-bottom:1px solid var(--line);display:flex;overflow-x:auto;padding:8px}}
+.role{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:none;background:none;font-family:inherit;cursor:pointer;padding:9px 10px;border-radius:12px;margin-bottom:2px}
+.role canvas{width:30px;height:30px;border-radius:8px;background:#f4f1e4;flex:none}
+.role .txt{min-width:0}
+.role .nm{font-size:13.5px;font-weight:700;color:var(--sub);display:flex;align-items:center;gap:6px}
+.role .nm::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--rc);flex:none;opacity:.4}
+.role .duty{font-size:10.5px;color:var(--sub);margin-top:1px;opacity:.85}
+.role.on{background:#f3f8f4;box-shadow:inset 3px 0 0 var(--rc)}
+.role.on .nm{color:var(--rc)}
+.role.on .nm::before{opacity:1}
+@media(max-width:820px){.role{border-radius:0;white-space:nowrap}.role.on{box-shadow:inset 0 -3px 0 var(--rc)}.role .duty{display:none}}
+
+main{padding:22px 24px 70px;max-width:860px}
+.pane{display:none}
+.pane.on{display:block}
+.pane-head{margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.pane-head canvas{width:56px;height:56px;border-radius:14px;background:#f4f1e4;flex:none}
+.pane-head h2{font-size:16px;font-weight:700;color:var(--rc)}
+.pane-head p{font-size:12.5px;color:var(--sub);margin-top:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 2px 8px rgba(150,130,80,.05)}
+h3{font-size:13.5px;font-weight:700;margin-bottom:10px}
+label{display:block;font-size:12px;color:var(--sub);font-weight:700;margin-bottom:4px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;font-size:14.5px;font-family:inherit;background:#fffefc;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--rc,var(--ink));outline-offset:-1px}
+textarea{resize:vertical}
+.field{margin-bottom:12px}
+.hint{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 16px;border-radius:10px;font-size:13.5px;cursor:pointer;font-family:inherit}
+.btn:hover{background:#faf6ea}
+.btn.primary{background:var(--rc,var(--ink));border-color:var(--rc,var(--ink));color:#fff;font-weight:700}
+.btn.small{padding:5px 11px;font-size:12px}
+.btn.danger{color:#b5432d;border-color:#f0d0c5}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.saved-flash{font-size:12px;color:var(--ok);display:none;align-self:center}
+.saved-flash.show{display:inline}
+
+.axis-banner{font-size:12.5px;border-radius:10px;padding:10px 13px;margin-bottom:16px;line-height:1.6}
+.axis-banner.ok{background:var(--ok-soft);color:#0d6b4f}
+.axis-banner.warn{background:var(--warn-soft);color:var(--warn)}
+
+.toggle{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.toggle button{flex:1;padding:9px 6px;border:none;background:#fff;font-size:12.5px;font-family:inherit;color:var(--sub);cursor:pointer;font-weight:700}
+.toggle button.on{background:var(--rc,var(--ink));color:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.chip{padding:6px 11px;border:1.5px solid var(--line);border-radius:16px;background:#fff;font-size:12px;font-family:inherit;color:var(--sub);cursor:pointer}
+.chip.on{border-color:var(--rc);color:var(--rc);font-weight:700;background:#fff}
+
+.outbox{margin-top:16px}
+.out-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.out-head h3{margin:0}
+.copy-btn{padding:7px 16px;border:1px solid var(--line);background:#fff;border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit}
+.copy-btn.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;line-height:1.7;background:#fffdf6;border:1px solid var(--line);border-radius:12px;padding:15px;max-height:56vh;overflow-y:auto}
+pre.empty{color:var(--sub);font-size:12.5px}
+.charinfo{font-size:11px;color:var(--sub);text-align:right;margin-top:5px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;color:var(--sub);font-weight:700;padding:7px 8px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.pill{display:inline-block;font-size:11px;padding:2px 9px;border-radius:6px;white-space:nowrap;font-weight:700}
+.pill.s0{background:#f1efe4;color:#8a8676}
+.pill.s1{background:#e3f1fb;color:#256199}
+.pill.s2{background:var(--warn-soft);color:var(--warn)}
+.pill.s3{background:var(--ok-soft);color:#0d6b4f}
+.del-x{color:#b5432d;cursor:pointer;font-size:13px;background:none;border:none;padding:2px 6px}
+td select{padding:4px 6px;font-size:12px;width:auto}
+.empty-row{text-align:center;color:var(--sub);padding:22px 10px;font-size:12.5px}
+.checkline{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:12px}
+.checkline input{width:auto;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <canvas id="mascot-head" width="72" height="72" style="width:36px;height:36px;border-radius:9px;background:#eaf6ef"></canvas>
+  <h1>Threads運営チームハブ</h1>
+  <span class="st">6役割×戦略軸共有｜API不要・プロンプト生成方式</span>
+</header>
+
+<div class="layout">
+<aside id="roster">
+  <button class="role on" data-r="strategy" style="--rc:var(--r-strategy)"><canvas id="ic-strategy" width="60" height="60"></canvas><span class="txt"><span class="nm">戦略責任者</span><span class="duty">方針・ペルソナの軸を管理</span></span></button>
+  <button class="role" data-r="research" style="--rc:var(--r-research)"><canvas id="ic-research" width="60" height="60"></canvas><span class="txt"><span class="nm">リサーチ担当</span><span class="duty">競合・バズ投稿の分析</span></span></button>
+  <button class="role" data-r="plan" style="--rc:var(--r-plan)"><canvas id="ic-plan" width="60" height="60"></canvas><span class="txt"><span class="nm">企画担当</span><span class="duty">1週間分の投稿企画</span></span></button>
+  <button class="role" data-r="edit" style="--rc:var(--r-edit)"><canvas id="ic-edit" width="60" height="60"></canvas><span class="txt"><span class="nm">編集担当</span><span class="duty">投稿作成・薬機法チェック</span></span></button>
+  <button class="role" data-r="marketing" style="--rc:var(--r-marketing)"><canvas id="ic-marketing" width="60" height="60"></canvas><span class="txt"><span class="nm">マーケ担当</span><span class="duty">Note導線・提携設計</span></span></button>
+  <button class="role" data-r="secretary" style="--rc:var(--r-secretary)"><canvas id="ic-secretary" width="60" height="60"></canvas><span class="txt"><span class="nm">秘書担当</span><span class="duty">タスク・見込み客の管理</span></span></button>
+</aside>
+
+<main>
+
+<!-- ============ 戦略責任者 ============ -->
+<section class="pane on" id="pane-strategy" style="--rc:var(--r-strategy)">
+  <div class="pane-head"><canvas id="hd-strategy" width="112" height="112"></canvas><div><h2>戦略責任者</h2><p>ここで保存した「軸」を、他の全役割が自動で参照します。最初に一度設定してください。</p></div></div>
+  <div class="card">
+    <h3>アカウントの目的</h3>
+    <div class="grid2">
+      <div class="field"><label>短期ゴール</label><input id="ax-goal-short" placeholder="低単価Note販売（足・インソール専門知識）"></div>
+      <div class="field"><label>中期ゴール</label><input id="ax-goal-mid" placeholder="インソール取扱店への送客（コミッション獲得）"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>ペルソナ（2軸）</h3>
+    <div class="field">
+      <label>ペルソナA：一般ユーザー層</label>
+      <textarea id="ax-persona-a" rows="2" placeholder="足の痛み・疲れを抱える30〜60代。立ち仕事・外反母趾・腰痛持ちなど"></textarea>
+    </div>
+    <div class="field">
+      <label>ペルソナB：セラピスト層</label>
+      <textarea id="ax-persona-b" rows="2" placeholder="個人経営の整骨院・整体院・鍼灸院のオーナー・セラピスト"></textarea>
+    </div>
+    <div class="field">
+      <label>投稿比率（一般：セラピスト）</label>
+      <select id="ax-ratio">
+        <option value="7:3" selected>7：3（threads_takumi実証済みの配分）</option>
+        <option value="8:2">8：2（一般寄り）</option>
+        <option value="6:4">6：4（セラピスト強化）</option>
+        <option value="5:5">5：5</option>
+      </select>
+    </div>
+  </div>
+  <div class="card">
+    <h3>トンマナ（投稿の空気感）</h3>
+    <div class="field">
+      <textarea id="ax-tone" rows="3" placeholder="専門家として信頼感を出す（押しつけがましくない）。難しい言葉は使わず中学生でもわかる言葉で。共感から入り解決策を示す。"></textarea>
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" id="btn-save-axis">この軸を保存する</button>
+      <button class="btn" id="btn-axis-prompt">ペルソナ深掘りプロンプトを生成</button>
+      <span class="saved-flash" id="axis-saved">保存しました ✓</span>
+    </div>
+  </div>
+  <div class="outbox" id="out-strategy-wrap" style="display:none">
+    <div class="out-head"><h3>生成されたプロンプト</h3><button class="copy-btn" data-out="out-strategy">コピー</button></div>
+    <pre id="out-strategy"></pre>
+  </div>
+</section>
+
+<!-- ============ リサーチ担当 ============ -->
+<section class="pane" id="pane-research" style="--rc:var(--r-research)">
+  <div class="pane-head"><canvas id="hd-research" width="112" height="112"></canvas><div><h2>リサーチ担当</h2><p>集めた素材を貼り付けると、分析用プロンプトを組み立てます。</p></div></div>
+  <div class="axis-banner" data-axis-banner></div>
+  <div class="card">
+    <h3>分析の種類</h3>
+    <div class="toggle" id="rs-mode">
+      <button class="on" data-v="buzz">バズ投稿の構造分析</button>
+      <button data-v="competitor">競合Noteの分析</button>
+      <button data-v="own">自分の投稿の振り返り</button>
+    </div>
+    <div class="field">
+      <label id="rs-label">バズった投稿を貼り付け（2〜5件・「---」で区切る）</label>
+      <textarea id="rs-input" rows="8" placeholder="投稿1の本文…&#10;---&#10;投稿2の本文…"></textarea>
+      <p class="hint" id="rs-hint">なぜ伸びたかの構造（フック・構成・感情の動かし方）を抽出するプロンプトになります</p>
+    </div>
+    <button class="btn primary" id="btn-gen-research">分析プロンプトを生成</button>
+  </div>
+  <div class="outbox">
+    <div class="out-head"><h3>生成されたプロンプト</h3><button class="copy-btn" data-out="out-research">コピー</button></div>
+    <pre id="out-research" class="empty">素材を貼り付けて生成ボタンを押してください</pre>
+    <div class="charinfo" id="ci-research"></div>
+  </div>
+</section>
+
+<!-- ============ 企画担当 ============ -->
+<section class="pane" id="pane-plan" style="--rc:var(--r-plan)">
+  <div class="pane-head"><canvas id="hd-plan" width="112" height="112"></canvas><div><h2>企画担当</h2><p>テーマから1週間分の投稿企画（ネタ出し）を設計します。</p></div></div>
+  <div class="axis-banner" data-axis-banner></div>
+  <div class="card">
+    <div class="field"><label>今週のテーマ・ネタ元（knowledgeのテーマ名など）</label><input id="pl-theme" placeholder="例：外反母趾／#7 外反母趾.txt の内容から"></div>
+    <div class="field">
+      <label>使いたい断言型（複数選択・未選択なら自動配分）</label>
+      <div class="chips" id="pl-types"></div>
+      <p class="hint">threads_takumiで実証済みの8つの型です</p>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>週の構成</label>
+        <select id="pl-week"><option selected>毎日別の切り口で7日分</option><option>1テーマを深掘りする連載型（7日間）</option></select></div>
+      <div class="field"><label>今週の重点段階</label>
+        <select id="pl-stage"><option selected>網をかける（認知・保存狙い）</option><option>見極め（リプライ・会話誘発）</option><option>売り込み（転換・誘導）</option><option>ミックス（自動配分）</option></select></div>
+    </div>
+    <button class="btn primary" id="btn-gen-plan">企画プロンプトを生成</button>
+  </div>
+  <div class="outbox">
+    <div class="out-head"><h3>生成されたプロンプト</h3><button class="copy-btn" data-out="out-plan">コピー</button></div>
+    <pre id="out-plan" class="empty">テーマを入力して生成ボタンを押してください</pre>
+    <div class="charinfo" id="ci-plan"></div>
+  </div>
+</section>
+
+<!-- ============ 編集担当 ============ -->
+<section class="pane" id="pane-edit" style="--rc:var(--r-edit)">
+  <div class="pane-head"><canvas id="hd-edit" width="112" height="112"></canvas><div><h2>編集担当</h2><p>投稿本文の作成。薬機法チェックの制約が常に組み込まれます。</p></div></div>
+  <div class="axis-banner" data-axis-banner></div>
+  <div class="card">
+    <div class="grid2">
+      <div class="field"><label>対象読者</label>
+        <select id="ed-target"><option selected>軸の比率で自動配分（一般＋セラピスト）</option><option>一般ユーザー向けのみ</option><option>セラピスト向けのみ</option></select></div>
+      <div class="field"><label>投稿数</label>
+        <select id="ed-count"><option>1本</option><option>3本</option><option selected>10本（takumi標準）</option><option>7本（1週間分）</option></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>段階</label>
+        <select id="ed-stage"><option selected>網をかける（認知）</option><option>見極め（ファン化・会話）</option><option>売り込み（転換）</option></select></div>
+      <div class="field" id="ed-goal-field" style="display:none"><label>転換のゴール</label>
+        <select id="ed-goal"><option selected>有料Noteへの誘導</option><option>インソール相談（セラピスト）</option><option>両方を段階的に</option></select></div>
+    </div>
+    <label class="checkline" id="ed-seminar-line" style="display:none"><input type="checkbox" id="ed-seminar"> セラピスト向け投稿の末尾に「無料説明会（Zoom・40分）」への案内を入れる</label>
+    <div class="field">
+      <label>ナレッジライブラリ（選ぶと専門知識が自動で組み込まれます）</label>
+      <select id="ed-kb">
+        <option value="">使わない（手入力のみ）</option>
+      </select>
+      <p class="hint" id="ed-kb-info">セミナー14テーマ・商品8種から選択。選んだ内容が「事実の根拠」としてプロンプトに埋め込まれ、AIの創作（ハルシネーション）を防ぐ制約も自動で入ります</p>
+    </div>
+    <div class="field">
+      <label>ネタ・専門知識（箇条書き・ナレッジ選択時は補足として任意）</label>
+      <textarea id="ed-knowledge" rows="5" placeholder="・外反母趾の人は靴の中で指が使えていない&#10;・実は靴のサイズより「かかとの固定」が重要&#10;・セミナーで話した◯◯の事例"></textarea>
+    </div>
+    <div class="field">
+      <label>バズ投稿の型を参考にする（任意・「---」区切りで2〜3件）</label>
+      <textarea id="ed-buzz" rows="4" placeholder="貼り付けると「構成・フックの型のみ参考、内容は自分の知識から」という制約付きで組み込まれます"></textarea>
+    </div>
+    <label class="checkline"><input type="checkbox" id="ed-ref"> knowledgeの文字起こし・PDFを添付して使う（Claudeに貼るとき一緒にドラッグ＆ドロップ）</label>
+    <label class="checkline"><input type="checkbox" id="ed-pair"> 2投稿セット構造にする（1本目：断言100字以内＋2本目：理由展開200字以内）</label>
+    <button class="btn primary" id="btn-gen-edit">投稿作成プロンプトを生成</button>
+  </div>
+  <div class="outbox">
+    <div class="out-head"><h3>生成されたプロンプト</h3><button class="copy-btn" data-out="out-edit">コピー</button></div>
+    <pre id="out-edit" class="empty">ネタを入力して生成ボタンを押してください</pre>
+    <div class="charinfo" id="ci-edit"></div>
+  </div>
+</section>
+
+<!-- ============ マーケ担当 ============ -->
+<section class="pane" id="pane-marketing" style="--rc:var(--r-marketing)">
+  <div class="pane-head"><canvas id="hd-marketing" width="112" height="112"></canvas><div><h2>マーケ担当</h2><p>収益への導線を設計します。Note販売とセラピスト提携の2系統。</p></div></div>
+  <div class="axis-banner" data-axis-banner></div>
+  <div class="card">
+    <div class="toggle" id="mk-mode">
+      <button class="on" data-v="note">Note販売導線</button>
+      <button data-v="therapist">セラピスト提携導線</button>
+    </div>
+    <div id="mk-note-fields">
+      <div class="field"><label>Note記事のテーマ</label><input id="mk-theme" placeholder="例：外反母趾の患者説明が劇的に楽になる伝え方"></div>
+      <div class="grid2">
+        <div class="field"><label>価格</label>
+          <select id="mk-price"><option selected>1,980円（takumi標準）</option><option>980円</option><option>2,980円</option><option>その他（プロンプト内で調整）</option></select></div>
+        <div class="field"><label>設計したいもの</label>
+          <select id="mk-note-what"><option selected>タイトル案＋無料/有料の切り分け設計</option><option>無料部分の「引き」の文章</option><option>購入ボタン前の一押し文言</option><option>Threadsからの誘導投稿</option></select></div>
+      </div>
+    </div>
+    <div id="mk-th-fields" style="display:none">
+      <div class="field"><label>設計したいもの</label>
+        <select id="mk-th-what"><option selected>無料説明会（Zoom・40分）への案内DM</option><option>信頼構築の返信・DM文面（説明会の話はまだしない）</option><option>説明会案内を含むセラピスト向け投稿の末尾文</option><option>説明会後のフォロー・後押しメッセージ</option></select></div>
+      <div class="field"><label>相手の興味シグナル（何に反応してくれたか）</label><textarea id="mk-th-context" rows="2" placeholder="例：インソール投稿に「うちでも扱えますか？」とリプライをくれた整体院オーナー"></textarea></div>
+      <div class="field"><label>説明会の実績・メリット（任意・あれば成約率が上がります）</label><textarea id="mk-th-merit" rows="2" placeholder="例：導入院◯院／導入した院の平均売上プラス◯円／在庫リスクなし　など"></textarea></div>
+    </div>
+    <button class="btn primary" id="btn-gen-marketing">導線プロンプトを生成</button>
+  </div>
+  <div class="outbox">
+    <div class="out-head"><h3>生成されたプロンプト</h3><button class="copy-btn" data-out="out-marketing">コピー</button></div>
+    <pre id="out-marketing" class="empty">内容を選んで生成ボタンを押してください</pre>
+    <div class="charinfo" id="ci-marketing"></div>
+  </div>
+</section>
+
+<!-- ============ 秘書担当 ============ -->
+<section class="pane" id="pane-secretary" style="--rc:var(--r-secretary)">
+  <div class="pane-head"><canvas id="hd-secretary" width="112" height="112"></canvas><div><h2>秘書担当</h2><p>タスクと見込み客をここで管理します。AIは使わず、このブラウザに保存されます。</p></div></div>
+  <div class="card">
+    <h3>タスク管理</h3>
+    <div class="grid2">
+      <div class="field"><label>タスク名</label><input id="tk-title" placeholder="例：外反母趾テーマの投稿10本を生成"></div>
+      <div class="field"><label>期限（任意）</label><input type="date" id="tk-due"></div>
+    </div>
+    <div class="btnrow" style="margin-bottom:14px">
+      <button class="btn primary small" id="btn-add-task">タスクを追加</button>
+    </div>
+    <table id="task-table">
+      <thead><tr><th>タスク</th><th>ステータス</th><th>期限</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="hint" style="margin-top:8px">「承認待ち」＝投稿前の薬機法・内容チェック待ちの状態。ここを必ず通してから投稿してください。</p>
+  </div>
+  <div class="card">
+    <h3>見込み客リスト（興味を示した人）</h3>
+    <div class="grid2">
+      <div class="field"><label>アカウント名・名前</label><input id="ld-name" placeholder="@example"></div>
+      <div class="field"><label>種別</label>
+        <select id="ld-type"><option selected>セラピスト</option><option>一般ユーザー</option></select></div>
+    </div>
+    <div class="field"><label>興味のシグナル（何をしてくれたか）</label><input id="ld-signal" placeholder="例：インソール投稿に「詳しく知りたい」とリプライ"></div>
+    <div class="btnrow" style="margin-bottom:14px">
+      <button class="btn primary small" id="btn-add-lead">リストに追加</button>
+    </div>
+    <table id="lead-table">
+      <thead><tr><th>アカウント</th><th>種別</th><th>シグナル</th><th>ステータス</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="card" id="api-card">
+    <h3>Threads API連携（投稿・インサイト自動化）</h3>
+    <div id="api-setup" >
+      <p class="hint" style="margin-bottom:10px">Meta for Developersで取得したアクセストークンを入力してください。このブラウザ内にのみ保存され、外部には送信されません。</p>
+      <div class="field"><label>アクセストークン</label><input type="password" id="api-token" placeholder="THAAxxxxxxxxxxxxxxxxxxxxx"></div>
+      <div class="field"><label>Threadsユーザーinsole ID（数字。トークン取得画面で確認できます）</label><input id="api-userid" placeholder="例：1789xxxxxxxxxx"></div>
+      <div class="btnrow">
+        <button class="btn primary small" id="btn-save-token">保存して接続確認</button>
+        <button class="btn small danger" id="btn-clear-token">トークンを削除</button>
+      </div>
+      <p id="api-status" class="hint" style="margin-top:8px"></p>
+    </div>
+
+    <div id="api-panel" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+      <h3>投稿する</h3>
+      <div class="field"><label>投稿本文（編集担当タブの生成結果から1本ずつ貼り付け）</label><textarea id="api-post-text" rows="4" placeholder="投稿本文をここに貼り付け"></textarea></div>
+      <div class="btnrow" style="margin-bottom:16px">
+        <button class="btn primary small" id="btn-publish">この内容をThreadsに投稿する</button>
+      </div>
+
+      <h3>インサイトを取得する</h3>
+      <p class="hint" style="margin-bottom:8px">直近の投稿のいいね数・返信数・閲覧数を自動取得し、下の実績ログに追加します。</p>
+      <button class="btn small" id="btn-fetch-insights">最新の投稿実績を取得</button>
+      <div id="insight-result" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>投稿実績ログ（API取得分・手入力分）</h3>
+    <div class="grid2">
+      <div class="field"><label>投稿の概要</label><input id="ins-summary" placeholder="例：外反母趾×かかと固定の投稿"></div>
+      <div class="field"><label>いいね数／返信数</label><input id="ins-numbers" placeholder="例：12 / 3"></div>
+    </div>
+    <div class="btnrow" style="margin-bottom:12px"><button class="btn small" id="btn-add-insight">手動で1件追加</button></div>
+    <table id="insight-table">
+      <thead><tr><th>日時</th><th>投稿概要</th><th>いいね</th><th>返信</th><th>取得方法</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>データの保存・引越し</h3>
+    <div class="btnrow">
+      <button class="btn" id="btn-export">全データをファイルに保存（バックアップ）</button>
+      <label class="btn" style="cursor:pointer">バックアップから復元<input type="file" id="import-file" accept=".json" style="display:none"></label>
+    </div>
+    <p class="hint" style="margin-top:8px">データはこのブラウザ内に自動保存されます。別のPC・ブラウザに移すときはバックアップファイルを使ってください。</p>
+  </div>
+</section>
+
+</main>
+</div>
+<script src="mascot.js"></script>
+<script>
+  drawMascot("mascot-head","typing","#2f9e7a");
+  drawMascot("ic-strategy","phone","#2f9e7a");
+  drawMascot("ic-research","typing","#3a9ce0");
+  drawMascot("ic-plan","writing","#e0a12a");
+  drawMascot("ic-edit","writing","#8b7fe0");
+  drawMascot("ic-marketing","phone","#e08a5c");
+  drawMascot("ic-secretary","typing","#8a8676");
+  drawMascot("hd-strategy","phone","#2f9e7a");
+  drawMascot("hd-research","typing","#3a9ce0");
+  drawMascot("hd-plan","writing","#e0a12a");
+  drawMascot("hd-edit","writing","#8b7fe0");
+  drawMascot("hd-marketing","phone","#e08a5c");
+  drawMascot("hd-secretary","typing","#8a8676");
+</script>
+<script src="knowledge_data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
