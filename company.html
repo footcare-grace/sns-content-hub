@@ -6,95 +6,96 @@
 <title>会社・取扱店アカウント運用ハブ</title>
 <style>
 :root{
-  --ink:#33322a;--sub:#8a8676;--line:#eee7d6;--bg:#fffdf6;--card:#fff;
-  --r-post:#3a6fc7;--r-secretary:#8a8676;
-  --ok:#1d9e78;--ok-soft:#e6f8f0;--warn-soft:#fff5e0;--warn:#b5790f;
+  --ink:#26271f;--sub:#6e6d63;--line:#e4e2d7;--bg:#faf9f4;--card:#fff;
+  --r-post:#1d4e89;--r-secretary:#5f5e56;
+  --ok:#1d6e5a;--ok-soft:#e4f1ec;--warn-soft:#fdf3e3;--warn:#8a5a0d;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65}
-header{background:linear-gradient(#e9f0fb,#fbf7ea);border-bottom:1px solid var(--line);padding:13px 22px;display:flex;align-items:center;gap:12px}
-header h1{font-size:16.5px;font-weight:700;color:#2a55a3}
-header .st{font-size:11.5px;color:var(--sub)}
+header{background:#20242b;border-bottom:1px solid var(--line);padding:13px 22px;display:flex;align-items:baseline;gap:12px}
+header h1{font-size:16.5px;font-weight:600;color:#fff}
+header .st{font-size:11.5px;color:#b9c2cf}
 .layout{display:grid;grid-template-columns:224px 1fr;max-width:1280px;margin:0 auto;min-height:calc(100vh - 49px)}
 @media(max-width:820px){.layout{grid-template-columns:1fr}}
-aside{border-right:1px solid var(--line);padding:18px 10px;background:#fffefb}
+aside{border-right:1px solid var(--line);padding:18px 0}
 @media(max-width:820px){aside{border-right:none;border-bottom:1px solid var(--line);display:flex;overflow-x:auto;padding:8px}}
-.role{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:none;background:none;font-family:inherit;cursor:pointer;padding:9px 10px;border-radius:12px;margin-bottom:2px}
-.role canvas{width:30px;height:30px;border-radius:8px;background:#f4f1e4;flex:none}
-.role .txt{min-width:0}
-.role .nm{font-size:13.5px;font-weight:700;color:var(--sub);display:flex;align-items:center;gap:6px}
-.role .nm::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--rc);flex:none;opacity:.4}
-.role .duty{font-size:10.5px;color:var(--sub);margin-top:1px;opacity:.85}
-.role.on{background:#eaf1fb;box-shadow:inset 3px 0 0 var(--rc)}
+.role{display:block;width:100%;text-align:left;border:none;background:none;font-family:inherit;cursor:pointer;padding:11px 18px 11px 15px;border-left:3px solid transparent}
+.role .nm{font-size:13.5px;font-weight:600;color:var(--sub);display:flex;align-items:center;gap:7px}
+.role .nm::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--rc);flex:none;opacity:.45}
+.role .duty{font-size:10.5px;color:var(--sub);margin:2px 0 0 15px;opacity:.8}
+.role.on{border-left-color:var(--rc);background:var(--card)}
 .role.on .nm{color:var(--rc)}
 .role.on .nm::before{opacity:1}
-@media(max-width:820px){.role{border-radius:0;white-space:nowrap}.role.on{box-shadow:inset 0 -3px 0 var(--rc)}.role .duty{display:none}}
+@media(max-width:820px){.role{border-left:none;border-bottom:3px solid transparent;white-space:nowrap;padding:8px 12px}.role.on{border-bottom-color:var(--rc)}.role .duty{display:none}}
 main{padding:22px 24px 70px;max-width:860px}
 .pane{display:none}
 .pane.on{display:block}
-.pane-head{margin-bottom:16px;display:flex;align-items:center;gap:14px}
-.pane-head canvas{width:56px;height:56px;border-radius:14px;background:#f4f1e4;flex:none}
-.pane-head h2{font-size:16px;font-weight:700;color:var(--rc)}
+.pane-head{margin-bottom:16px}
+.pane-head h2{font-size:16px;font-weight:600;color:var(--rc)}
 .pane-head p{font-size:12.5px;color:var(--sub);margin-top:2px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 2px 8px rgba(150,130,80,.05)}
-h3{font-size:13.5px;font-weight:700;margin-bottom:10px}
-label{display:block;font-size:12px;color:var(--sub);font-weight:700;margin-bottom:4px}
-input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;font-size:14.5px;font-family:inherit;background:#fffefc;color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:14px}
+h3{font-size:13.5px;font-weight:600;margin-bottom:10px}
+label{display:block;font-size:12px;color:var(--sub);font-weight:600;margin-bottom:4px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font-size:14.5px;font-family:inherit;background:#fff;color:var(--ink)}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--rc,var(--ink));outline-offset:-1px}
 .field{margin-bottom:12px}
 .hint{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:640px){.grid2{grid-template-columns:1fr}}
-.btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 16px;border-radius:10px;font-size:13.5px;cursor:pointer;font-family:inherit}
-.btn:hover{background:#faf6ea}
-.btn.primary{background:var(--rc,var(--ink));border-color:var(--rc,var(--ink));color:#fff;font-weight:700}
+.btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 16px;border-radius:8px;font-size:13.5px;cursor:pointer;font-family:inherit}
+.btn:hover{background:#f3f2ec}
+.btn.primary{background:var(--rc,var(--ink));border-color:var(--rc,var(--ink));color:#fff;font-weight:600}
 .btn.small{padding:5px 11px;font-size:12px}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap}
-.toggle{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
-.toggle button{flex:1;padding:9px 6px;border:none;background:#fff;font-size:12.5px;font-family:inherit;color:var(--sub);cursor:pointer;font-weight:700}
+.toggle{display:flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.toggle button{flex:1;padding:9px 6px;border:none;background:#fff;font-size:12.5px;font-family:inherit;color:var(--sub);cursor:pointer;font-weight:600}
 .toggle button.on{background:var(--rc,var(--ink));color:#fff}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
 .chip{padding:6px 11px;border:1.5px solid var(--line);border-radius:16px;background:#fff;font-size:12px;font-family:inherit;color:var(--sub);cursor:pointer}
-.chip.on{border-color:var(--rc);color:var(--rc);font-weight:700}
+.chip.on{border-color:var(--rc);color:var(--rc);font-weight:600}
 .outbox{margin-top:16px}
 .out-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .out-head h3{margin:0}
-.copy-btn{padding:7px 16px;border:1px solid var(--line);background:#fff;border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit}
+.copy-btn{padding:7px 16px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit}
 .copy-btn.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
-pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;line-height:1.7;background:#fffdf6;border:1px solid var(--line);border-radius:12px;padding:15px;max-height:56vh;overflow-y:auto}
+pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;line-height:1.7;background:#fcfbf7;border:1px solid var(--line);border-radius:9px;padding:15px;max-height:56vh;overflow-y:auto}
 pre.empty{color:var(--sub);font-size:12.5px}
 .charinfo{font-size:11px;color:var(--sub);text-align:right;margin-top:5px}
-.stepnote{font-size:12px;color:var(--sub);background:#eaf1fb;border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.7}
+.stepnote{font-size:12px;color:var(--sub);background:#eef2f8;border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.7}
 .stepnote b{color:var(--r-post)}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;font-size:11px;color:var(--sub);font-weight:700;padding:7px 8px;border-bottom:2px solid var(--line);white-space:nowrap}
+th{text-align:left;font-size:11px;color:var(--sub);font-weight:600;padding:7px 8px;border-bottom:2px solid var(--line);white-space:nowrap}
 td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-.pill{display:inline-block;font-size:11px;padding:2px 9px;border-radius:6px;white-space:nowrap;font-weight:700}
-.pill.s0{background:#f1efe4;color:#8a8676}
-.pill.s1{background:#e3f1fb;color:#256199}
-.pill.s2{background:var(--ok-soft);color:#0d6b4f}
-.del-x{color:#b5432d;cursor:pointer;font-size:13px;background:none;border:none;padding:2px 6px}
+.pill{display:inline-block;font-size:11px;padding:2px 9px;border-radius:5px;white-space:nowrap;font-weight:600}
+.pill.s0{background:#f1efe8;color:#5f5e56}
+.pill.s1{background:#e6f1fb;color:#0c447c}
+.pill.s2{background:var(--ok-soft);color:#085041}
+.del-x{color:#a32d2d;cursor:pointer;font-size:13px;background:none;border:none;padding:2px 6px}
 .empty-row{text-align:center;color:var(--sub);padding:22px 10px;font-size:12.5px}
+.slide-card{margin-bottom:14px;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.slide-head{background:#eef2f8;padding:8px 13px;font-size:12.5px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.slide-card pre{border:none;border-radius:0;margin:0}
+.copy-btn.small{padding:4px 11px;font-size:11.5px}
 </style>
+<link rel="stylesheet" href="rpg-theme.css">
 </head>
 <body>
 <header>
-  <canvas id="mascot-head" width="72" height="72" style="width:36px;height:36px;border-radius:9px;background:#e9f0fb"></canvas>
   <h1>会社・取扱店アカウント運用ハブ</h1>
   <span class="st">SPIRAL TURN商品紹介｜画像プロンプト＋SEOキャプション</span>
 </header>
 
 <div class="layout">
 <aside>
-  <button class="role on" data-r="post" style="--rc:var(--r-post)"><canvas id="ic-post" width="60" height="60"></canvas><span class="txt"><span class="nm">投稿制作担当</span><span class="duty">商品紹介の画像＋キャプション</span></span></button>
-  <button class="role" data-r="secretary" style="--rc:var(--r-secretary)"><canvas id="ic-secretary" width="60" height="60"></canvas><span class="txt"><span class="nm">秘書担当</span><span class="duty">投稿履歴の管理</span></span></button>
+  <button class="role on" data-r="post" style="--rc:var(--r-post)"><span class="nm">投稿制作担当</span><span class="duty">商品紹介の画像＋キャプション</span></button>
+  <button class="role" data-r="secretary" style="--rc:var(--r-secretary)"><span class="nm">秘書担当</span><span class="duty">投稿履歴の管理</span></button>
 </aside>
 
 <main>
 
 <!-- ============ 投稿制作担当 ============ -->
 <section class="pane on" id="pane-post" style="--rc:var(--r-post)">
-  <div class="pane-head"><canvas id="hd-post" width="112" height="112"></canvas><div><h2>投稿制作担当</h2><p>商品を選ぶだけで、ChatGPT画像生成プロンプトとSEOキャプションのセットを作ります。</p></div></div>
+  <div class="pane-head"><h2>投稿制作担当</h2><p>商品を選ぶだけで、ChatGPT画像生成プロンプトとSEOキャプションのセットを作ります。</p></div>
   <div class="stepnote"><b>使い方：</b>①商品・アカウント・訴求を選んで生成 → ②画像プロンプトを<b>HPの商品写真と一緒に</b>ChatGPTへ → ③キャプションプロンプトをClaudeへ</div>
   <div class="card">
     <div class="field"><label>商品を選ぶ</label>
@@ -113,11 +114,21 @@ td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
       <label>訴求ポイント（複数選択可）</label>
       <div class="chips" id="ps-points"></div>
     </div>
+    <div class="field">
+      <label>投稿の枚数（ストーリー構成）</label>
+      <select id="ps-slides">
+        <option value="1">1枚（単体画像）</option>
+        <option value="3">3枚（起承転結の簡易版）</option>
+        <option value="4" selected>4枚（悩み→原因→解決→商品）</option>
+        <option value="5">5枚（悩み→原因→解決→商品→お客様の声/保証）</option>
+      </select>
+      <p class="hint">ChatGPTは1回の指示で1枚しか生成できないため、枚数分のプロンプトを1枚ずつ順番に出力します。同じ指示を毎回貼り直せば、統一感のあるシリーズになります</p>
+    </div>
     <button class="btn primary" id="btn-gen-post">画像プロンプト＋キャプションを生成</button>
   </div>
   <div class="outbox">
-    <div class="out-head"><h3>① ChatGPT用・画像生成プロンプト</h3><button class="copy-btn" data-out="out-image">コピー</button></div>
-    <pre id="out-image" class="empty">商品を選んで生成ボタンを押してください</pre>
+    <div class="out-head"><h3>① ChatGPT用・画像生成プロンプト（1枚ずつ）</h3></div>
+    <div id="image-slides"></div>
   </div>
   <div class="outbox">
     <div class="out-head"><h3>② Claude用・キャプション生成プロンプト</h3><button class="copy-btn" data-out="out-caption">コピー</button></div>
@@ -128,7 +139,7 @@ td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 
 <!-- ============ 秘書担当 ============ -->
 <section class="pane" id="pane-secretary" style="--rc:var(--r-secretary)">
-  <div class="pane-head"><canvas id="hd-secretary" width="112" height="112"></canvas><div><h2>秘書担当</h2><p>どの商品をいつ投稿したかを記録します。同じ商品ばかりに偏るのを防げます。</p></div></div>
+  <div class="pane-head"><h2>秘書担当</h2><p>どの商品をいつ投稿したかを記録します。同じ商品ばかりに偏るのを防げます。</p></div>
   <div class="card">
     <h3>投稿を記録</h3>
     <div class="grid2">
@@ -148,14 +159,6 @@ td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 
 </main>
 </div>
-<script src="mascot.js"></script>
-<script>
-  drawMascot("mascot-head","camera","#2a55a3");
-  drawMascot("ic-post","camera","#3a6fc7");
-  drawMascot("ic-secretary","typing","#8a8676");
-  drawMascot("hd-post","camera","#3a6fc7");
-  drawMascot("hd-secretary","typing","#8a8676");
-</script>
 <script src="knowledge_data.js"></script>
 <script src="company_app.js"></script>
 </body>
