@@ -3,6 +3,16 @@
 const $=s=>document.querySelector(s);
 const LS_KEY="ceo-tasks-v1";
 
+/* ハブ名 → マスコット種類・色（ロビーの各タブと統一） */
+const HUB_MASCOT={
+  threads:{label:"Threads",type:"phone",color:"#2f9e7a"},
+  note:{label:"Note",type:"writing",color:"#3a7fd0"},
+  seminar:{label:"セミナー集客",type:"camera",color:"#e08a5c"},
+  company:{label:"会社・取扱店",type:"camera",color:"#3a6fc7"},
+  thumb:{label:"サムネイル",type:"drawing",color:"#3a4a7a"},
+  other:{label:"その他",type:"typing",color:"#8a8676"}
+};
+
 /* ================= データ ================= */
 function loadTasks(){
   try{const d=JSON.parse(localStorage.getItem(LS_KEY));return Array.isArray(d)?d:[];}catch(e){return [];}
@@ -58,8 +68,10 @@ function updateToggle(){
 /* ================= タスク行の生成 ================= */
 function taskRowHTML(t){
   const overdue=(!t.done && t.date<todayStr());
+  const hub=HUB_MASCOT[t.type]||HUB_MASCOT.other;
   return `<div class="task-row ${t.done?"done":""}" data-id="${t.id}">
     <canvas class="t-mascot" width="26" height="26"></canvas>
+    <span class="t-hub" style="color:${hub.color}">${hub.label}</span>
     <span class="t-title ${overdue?"overdue":""}">${esc(t.title)}</span>
     <button class="t-check" data-id="${t.id}" aria-label="完了にする">${t.done?"✓":""}<span class="star-pop">★</span></button>
     <button class="t-del" data-id="${t.id}" aria-label="削除">✕</button>
@@ -72,8 +84,9 @@ function paintMascots(container){
     const id=row.dataset.id;
     const t=tasks.find(x=>x.id===id);
     if(!t)return;
+    const hub=HUB_MASCOT[t.type]||HUB_MASCOT.other;
     const cv=row.querySelector(".t-mascot");
-    if(cv&&window.drawMascot)drawMascot(cv,t.type||"typing","#a8792f");
+    if(cv&&window.drawMascot)drawMascot(cv,hub.type,hub.color);
   });
 }
 
