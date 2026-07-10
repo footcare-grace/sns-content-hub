@@ -54,7 +54,14 @@ $("#ceo-add-btn").addEventListener("click",()=>{
   $("#ceo-type").value="";
   render();
 });
-$("#ceo-title").addEventListener("keydown",e=>{if(e.key==="Enter")$("#ceo-add-btn").click();});
+let isComposingIME=false;
+$("#ceo-title").addEventListener("compositionstart",()=>{isComposingIME=true;});
+$("#ceo-title").addEventListener("compositionend",()=>{isComposingIME=false;});
+$("#ceo-title").addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !isComposingIME && !e.isComposing && e.keyCode!==229){
+    $("#ceo-add-btn").click();
+  }
+});
 
 /* 日付初期値は今日 */
 $("#ceo-date").value=todayStr();
