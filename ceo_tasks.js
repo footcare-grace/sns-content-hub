@@ -88,6 +88,11 @@ function paintMascots(container){
     const cv=row.querySelector(".t-mascot");
     if(cv&&window.drawMascot)drawMascot(cv,hub.type,hub.color);
   });
+  container.querySelectorAll(".s-mascot").forEach(cv=>{
+    const key=cv.dataset.hubkey;
+    const hub=HUB_MASCOT[key];
+    if(hub&&window.drawMascot)drawMascot(cv,hub.type,hub.color);
+  });
 }
 
 /* canvas要素を直接受け取れるようdrawMascotのラッパー互換対応 */
@@ -120,6 +125,40 @@ function renderWeek(){
 }
 
 /* ================= 月間ビュー ================= */
+/* ================= 今月の実績サマリー ================= */
+function renderMonthStats(monthTasks){
+  const done=monthTasks.filter(t=>t.done);
+  const totalCount=done.length;
+  const byHub={};
+  Object.keys(HUB_MASCOT).forEach(k=>byHub[k]=0);
+  done.forEach(t=>{byHub[t.type]=(byHub[t.type]||0)+1;});
+  const maxCount=Math.max(1,...Object.values(byHub));
+
+  let rows="";
+  Object.keys(HUB_MASCOT).forEach(key=>{
+    const count=byHub[key]||0;
+    if(count===0)return; // 実績ゼロの部署は表示しない（見た目をすっきりさせる）
+    const hub=HUB_MASCOT[key];
+    const widthPct=Math.round((count/maxCount)*100);
+    rows+=`<div class="stats-row">
+      <canvas class="s-mascot" data-hubkey="${key}" width="22" height="22"></canvas>
+      <span class="s-label">${hub.label}</span>
+      <div class="s-bar-wrap"><div class="s-bar" style="width:${widthPct}%;background:${hub.color}"></div></div>
+      <span class="s-count">${count}件</span>
+    </div>`;
+  });
+  if(!rows)rows=`<p class="stats-empty">まだ実行済みのタスクがありません。達成したらここに積み上がっていきます。</p>`;
+
+  return `<div class="stats-card">
+    <div class="stats-head">
+      <h4>📊 今月の実績</h4>
+      <span class="stats-total"><b>${totalCount}</b>件 完了</span>
+    </div>
+    <div class="stats-bars">${rows}</div>
+  </div>`;
+}
+
+/* ================= 月間ビュー ================= */
 function renderMonth(){
   const now=new Date();
   const y=now.getFullYear(),m=now.getMonth();
@@ -128,9 +167,11 @@ function renderMonth(){
     return td.getFullYear()===y&&td.getMonth()===m;
   }).sort((a,b)=>a.date.localeCompare(b.date)||a.done-b.done);
 
-  if(!monthTasks.length)return `<p class="ceo-empty">今月の予定はまだありません。上のフォームから追加してください。</p>`;
+  const statsHTML=renderMonthStats(monthTasks);
 
-  let html=`<div class="month-list">`;
+  if(!monthTasks.length)return statsHTML+`<p class="ceo-empty">今月の予定はまだありません。上のフォームから追加してください。</p>`;
+
+  let html=statsHTML+`<div class="month-list">`;
   let lastDate="";
   monthTasks.forEach(t=>{
     if(t.date!==lastDate){
