@@ -47,9 +47,11 @@ $("#ceo-add-btn").addEventListener("click",()=>{
   const type=$("#ceo-type").value;
   if(!title){alert("「やること」を入力してください");return;}
   if(!date){alert("日付を選んでください");return;}
+  if(!type){alert("担当部署を選んでください");return;}
   tasks.push({id:Date.now()+Math.random().toString(16).slice(2),title,date,type,done:false});
   saveTasks(tasks);
   $("#ceo-title").value="";
+  $("#ceo-type").value="";
   render();
 });
 $("#ceo-title").addEventListener("keydown",e=>{if(e.key==="Enter")$("#ceo-add-btn").click();});
@@ -69,9 +71,10 @@ function updateToggle(){
 function taskRowHTML(t){
   const overdue=(!t.done && t.date<todayStr());
   const hub=HUB_MASCOT[t.type]||HUB_MASCOT.other;
+  const options=Object.keys(HUB_MASCOT).map(k=>`<option value="${k}" ${k===t.type?"selected":""}>${HUB_MASCOT[k].label}</option>`).join("");
   return `<div class="task-row ${t.done?"done":""}" data-id="${t.id}">
     <canvas class="t-mascot" width="26" height="26"></canvas>
-    <span class="t-hub" style="color:${hub.color}">${hub.label}</span>
+    <select class="t-hub-select" data-id="${t.id}" style="color:${hub.color}">${options}</select>
     <span class="t-title ${overdue?"overdue":""}">${esc(t.title)}</span>
     <button class="t-check" data-id="${t.id}" aria-label="完了にする">${t.done?"✓":""}<span class="star-pop">★</span></button>
     <button class="t-del" data-id="${t.id}" aria-label="削除">✕</button>
@@ -215,6 +218,14 @@ function render(){
   area.querySelectorAll(".t-del").forEach(b=>b.addEventListener("click",()=>{
     const id=b.dataset.id;
     tasks=tasks.filter(x=>x.id!==id);
+    saveTasks(tasks);
+    render();
+  }));
+  area.querySelectorAll(".t-hub-select").forEach(sel=>sel.addEventListener("change",()=>{
+    const id=sel.dataset.id;
+    const t=tasks.find(x=>x.id===id);
+    if(!t)return;
+    t.type=sel.value;
     saveTasks(tasks);
     render();
   }));
