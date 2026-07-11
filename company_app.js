@@ -92,14 +92,19 @@ $("#btn-gen-post").addEventListener("click",()=>{
   const structure=SLIDE_STRUCTURES[slideCount];
   const productName=prod.title.replace(/^[①-⑧]\s*/,"");
 
+  /* 商品データから「解決する悩み」を自動抽出（1枚目の悩みスライドで具体的に使う） */
+  const painMatch=prod.body.match(/解決する悩み[：:]\s*(.+)/);
+  const painList=painMatch?painMatch[1].trim():"";
+
   /* ---- ① ChatGPT用・画像生成プロンプト（スライドごとに1枚ずつ） ---- */
   const wrap=$("#image-slides");
   wrap.innerHTML="";
   const allSlidePrompts=[];
   structure.forEach((slide,i)=>{
     const needsProduct=slide.photo;
+    const isPainSlide=(i===0 && !needsProduct);
     const prompt=`【${slideCount}枚シリーズの${i+1}枚目／全${structure.length}枚】
-${needsProduct?"この文章と一緒に、HPの商品写真を添付してください。":"このスライドは商品写真の添付は不要です（悩みへの共感を引き出す導入イラストのため）。"}
+${needsProduct?"この文章と一緒に、HPの商品写真を添付してください。":`このスライドは商品写真の添付は不要です（悩みへの共感を引き出す導入イラストのため）。${isPainSlide&&painList?`扱う悩み：${painList}`:""}`}
 
 Instagram投稿用の画像（縦長・アスペクト比4:5・推奨サイズ1080×1350px）を作成してください。
 
@@ -118,7 +123,7 @@ ${productName}｜SPIRAL TURNのオーダーメイドインソール
 
 ■ このスライド固有のデザイン
 - ${isCompany?"ブランドの信頼感・高級感を重視（余白を活かした洗練されたレイアウト）":"施術者・店舗オーナーが「取り扱いたい」と感じる専門的な印象（機能の図解を重視）"}
-${needsProduct?"- 商品の特徴・使用シーンを示す短いテキストラベルを2〜3個配置し、矢印・引き出し線で示すこと\n- 商品写真の形状・色は改変しないこと（実物と異なる見た目にしない）":"- 商品写真は使わず、悩みへの共感が伝わるシンプルなイラスト・アイコンで構成すること"}
+${needsProduct?"- 商品の特徴・使用シーンを示す短いテキストラベルを2〜3個配置し、矢印・引き出し線で示すこと\n- 商品写真の形状・色は改変しないこと（実物と異なる見た目にしない）":isPainSlide&&painList?`- 商品写真は使わず、以下の具体的な悩みへの共感が伝わるシンプルなイラスト・アイコンで構成すること\n  【このスライドで扱う具体的な悩み】${painList}\n- 上記の悩みのうち1〜2個を選び、抽象的にせず「あるある」と感じられる具体的な場面（困っている表情の人物イラスト等）で表現すること`:"- 商品写真は使わず、悩みへの共感が伝わるシンプルなイラスト・アイコンで構成すること"}
 - 文字は日本語で、読みやすく大きめに
 
 ■ 避けること
