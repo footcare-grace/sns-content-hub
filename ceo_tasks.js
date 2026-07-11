@@ -39,6 +39,7 @@ function startOfWeek(base){
   return d;
 }
 const WEEKDAY_LABEL=["日","月","火","水","木","金","土"];
+const WEEKDAY_MON_LABEL=["月","火","水","木","金","土","日"];
 
 /* ================= 追加 ================= */
 $("#ceo-add-btn").addEventListener("click",()=>{
@@ -175,23 +176,42 @@ function renderMonth(){
   const monthTasks=tasks.filter(t=>{
     const td=new Date(t.date+"T00:00:00");
     return td.getFullYear()===y&&td.getMonth()===m;
-  }).sort((a,b)=>a.date.localeCompare(b.date)||a.done-b.done);
+  });
 
   const statsHTML=renderMonthStats(monthTasks);
+  const today=todayStr();
 
-  if(!monthTasks.length)return statsHTML+`<p class="ceo-empty">今月の予定はまだありません。上のフォームから追加してください。</p>`;
+  /* カレンダーの表示範囲を計算（月曜始まり、前後の月の日もマス目埋めのため表示） */
+  const firstOfMonth=new Date(y,m,1);
+  const lastOfMonth=new Date(y,m+1,0);
+  const gridStart=startOfWeek(firstOfMonth);
+  const gridEndBase=startOfWeek(lastOfMonth);
+  const gridEnd=new Date(gridEndBase);gridEnd.setDate(gridEndBase.getDate()+6);
 
-  let html=statsHTML+`<div class="month-list">`;
-  let lastDate="";
-  monthTasks.forEach(t=>{
-    if(t.date!==lastDate){
-      const d=new Date(t.date+"T00:00:00");
-      const overdueHead=(!t.done&&t.date<todayStr());
-      html+=`<div class="month-date-head ${overdueHead?"overdue":""}">${d.getMonth()+1}/${d.getDate()}（${WEEKDAY_LABEL[d.getDay()]}）</div>`;
-      lastDate=t.date;
-    }
-    html+=taskRowHTML(t);
-  });
+  let html=statsHTML;
+  html+=`<div class="cal-grid">`;
+  WEEKDAY_MON_LABEL.forEach(w=>html+=`<div class="cal-weekday">${w}</div>`);
+
+  const cursor=new Date(gridStart);
+  while(cursor<=gridEnd){
+    const ymd=fmtYMD(cursor);
+    const inMonth=cursor.getMonth()===m;
+    const isToday=ymd===today;
+    const dayTasks=tasks.filter(t=>t.date===ymd).sort((a,b)=>a.done-b.done);
+
+    let chips="";
+    dayTasks.slice(0,4).forEach(t=>{
+      const hub=HUB_MASCOT[t.type]||HUB_MASCOT.other;
+      chips+=`<div class="cal-chip ${t.done?"done":""}" data-id="${t.id}" title="${esc(t.title)}"><span class="dot" style="background:${hub.color}"></span><span class="check-mark">${t.done?"✓":""}</span>${esc(t.title)}</div>`;
+    });
+    if(dayTasks.length>4)chips+=`<div class="cal-chip" style="background:none;color:var(--sub);cursor:default">+${dayTasks.length-4}件</div>`;
+
+    html+=`<div class="cal-cell ${inMonth?"":"other-month"} ${isToday?"today":""}">
+      <div class="cal-cell-head"><span class="cal-daynum">${cursor.getDate()}</span><button class="cal-add-btn" data-date="${ymd}" aria-label="この日にタスクを追加">＋</button></div>
+      <div class="cal-tasks">${chips}</div>
+    </div>`;
+    cursor.setDate(cursor.getDate()+1);
+  }
   html+=`</div>`;
   return html;
 }
@@ -201,6 +221,22 @@ function render(){
   const area=$("#ceo-view-area");
   area.innerHTML=currentView==="week"?renderWeek():renderMonth();
   paintMascots(area);
+
+  /* カレンダー：＋ボタンで日付をセットして入力欄にフォーカス */
+  area.querySelectorAll(".cal-add-btn").forEach(b=>b.addEventListener("click",()=>{
+    $("#ceo-date").value=b.dataset.date;
+    $("#ceo-title").focus();
+    $("#ceo-title").scrollIntoView({behavior:"smooth",block:"center"});
+  }));
+  /* カレンダー：タスクのチップをクリックで完了トグル */
+  area.querySelectorAll(".cal-chip[data-id]").forEach(chip=>chip.addEventListener("click",()=>{
+    const id=chip.dataset.id;
+    const t=tasks.find(x=>x.id===id);
+    if(!t)return;
+    t.done=!t.done;
+    saveTasks(tasks);
+    render();
+  }));
 
   area.querySelectorAll(".t-check").forEach(b=>b.addEventListener("click",()=>{
     const id=b.dataset.id;
