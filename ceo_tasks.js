@@ -200,11 +200,10 @@ function renderMonth(){
     const dayTasks=tasks.filter(t=>t.date===ymd).sort((a,b)=>a.done-b.done);
 
     let chips="";
-    dayTasks.slice(0,4).forEach(t=>{
+    dayTasks.forEach(t=>{
       const hub=HUB_MASCOT[t.type]||HUB_MASCOT.other;
       chips+=`<div class="cal-chip ${t.done?"done":""}" data-id="${t.id}" title="${esc(t.title)}"><span class="dot" style="background:${hub.color}"></span><span class="check-mark">${t.done?"✓":""}</span>${esc(t.title)}</div>`;
     });
-    if(dayTasks.length>4)chips+=`<div class="cal-chip" style="background:none;color:var(--sub);cursor:default">+${dayTasks.length-4}件</div>`;
 
     html+=`<div class="cal-cell ${inMonth?"":"other-month"} ${isToday?"today":""}">
       <div class="cal-cell-head"><span class="cal-daynum">${cursor.getDate()}</span><button class="cal-add-btn" data-date="${ymd}" aria-label="この日にタスクを追加">＋</button></div>
