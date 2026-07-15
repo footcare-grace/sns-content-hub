@@ -703,15 +703,18 @@ $("#btn-fetch-insights").addEventListener("click",async()=>{
     if(!posts.length){box.textContent="投稿が見つかりませんでした";return;}
     let added=0;
     for(const post of posts){
-      const insRes=await fetch(`https://graph.threads.net/v1.0/${post.id}/insights?metric=likes,replies,views&access_token=${encodeURIComponent(apiToken)}`);
+      const insRes=await fetch(`https://graph.threads.net/v1.0/${post.id}/insights?metric=likes,replies,views,shares&access_token=${encodeURIComponent(apiToken)}`);
       const insData=await insRes.json();
       const metrics={};
-      (insData.data||[]).forEach(m=>{metrics[m.name]=m.values?.[0]?.value ?? m.total_value?.value ?? "—";});
+      (insData.data||[]).forEach(m=>{metrics[m.name]=m.values?.[0]?.value ?? m.total_value?.value ?? "0";});
       insightLog.unshift({
-        date:new Date(post.timestamp).toLocaleString("ja-JP"),
+        date:new Date(post.timestamp).toLocaleDateString("ja-JP"),
         summary:(post.text||"（本文なし）").slice(0,40),
-        likes:metrics.likes ?? "—",
-        replies:metrics.replies ?? "—",
+        target:"—（API取得のため未分類）",
+        likes:metrics.likes ?? "0",
+        saves:metrics.shares ?? "—",
+        replies:metrics.replies ?? "0",
+        views:metrics.views ?? "—",
         source:"API取得"
       });
       added++;
@@ -725,20 +728,30 @@ $("#btn-fetch-insights").addEventListener("click",async()=>{
 
 $("#btn-add-insight").addEventListener("click",()=>{
   const summary=$("#ins-summary").value.trim();
-  const nums=$("#ins-numbers").value.trim();
-  if(!summary){alert("投稿の概要を入力してください");return;}
-  const[likes,replies]=nums.split("/").map(s=>s?.trim()||"—");
-  insightLog.unshift({date:new Date().toLocaleString("ja-JP"),summary,likes:likes||"—",replies:replies||"—",source:"手入力"});
+  if(!summary){alert("投稿本文・概要を入力してください");return;}
+  const dateInput=$("#ins-date").value;
+  const date=dateInput?new Date(dateInput+"T00:00:00").toLocaleDateString("ja-JP"):new Date().toLocaleDateString("ja-JP");
+  insightLog.unshift({
+    date,
+    summary,
+    target:$("#ins-target").value,
+    likes:$("#ins-likes").value||"0",
+    saves:$("#ins-saves").value||"0",
+    replies:$("#ins-replies").value||"0",
+    views:$("#ins-views").value||"0",
+    source:"手入力"
+  });
   saveInsights();renderInsights();
-  $("#ins-summary").value="";$("#ins-numbers").value="";
+  $("#ins-summary").value="";$("#ins-date").value="";
+  $("#ins-likes").value="";$("#ins-saves").value="";$("#ins-replies").value="";$("#ins-views").value="";
 });
 
 function renderInsights(){
   const tb=$("#insight-table tbody");tb.innerHTML="";
-  if(!insightLog.length){tb.innerHTML=`<tr><td colspan="6" class="empty-row">実績がまだ記録されていません</td></tr>`;return;}
+  if(!insightLog.length){tb.innerHTML=`<tr><td colspan="9" class="empty-row">実績がまだ記録されていません</td></tr>`;return;}
   insightLog.slice(0,30).forEach((r,i)=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${esc(r.date)}</td><td>${esc(r.summary)}</td><td>${esc(r.likes)}</td><td>${esc(r.replies)}</td><td>${esc(r.source)}</td>
+    tr.innerHTML=`<td>${esc(r.date)}</td><td>${esc(r.summary)}</td><td>${esc(r.target)||"—"}</td><td>${esc(r.likes)}</td><td>${esc(r.saves)||"—"}</td><td>${esc(r.replies)}</td><td>${esc(r.views)||"—"}</td><td>${esc(r.source)}</td>
       <td><button class="del-x" data-i="${i}" aria-label="削除">✕</button></td>`;
     tb.appendChild(tr);
   });
@@ -746,6 +759,26 @@ function renderInsights(){
     insightLog.splice(Number(b.dataset.i),1);saveInsights();renderInsights();
   }));
 }
+
+$("#btn-send-insights").addEventListener("click",()=>{
+  if(!insightLog.length){alert("投稿実績ログが空です。先に記録を追加してください");return;}
+  const combined=insightLog.map(r=>
+    `投稿：${r.summary}（対象：${r.target||"—"}）\nいいね${r.likes}・保存${r.saves||0}・返信${r.replies}・閲覧${r.views||0}・${r.date}`
+  ).join("\n---\n");
+  $$(".role").forEach(x=>x.classList.remove("on"));
+  $$(".pane").forEach(x=>x.classList.remove("on"));
+  $('[data-r="research"]').classList.add("on");
+  $("#pane-research").classList.add("on");
+  renderAxisBanners();
+  $$("#rs-mode button").forEach(x=>x.classList.remove("on"));
+  $('#rs-mode button[data-v="own"]').classList.add("on");
+  rsMode="own";
+  $("#rs-label").textContent=RS_META.own.label;
+  $("#rs-hint").textContent=RS_META.own.hint;
+  $("#rs-input").placeholder=RS_META.own.ph;
+  $("#rs-input").value=combined;
+  $("#rs-input").scrollIntoView({behavior:"smooth",block:"center"});
+});
 
 /* ================= バックアップ・復元 ================= */
 $("#btn-export").addEventListener("click",()=>{

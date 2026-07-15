@@ -49,6 +49,8 @@ textarea{resize:vertical}
 .hint{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:640px){.grid4{grid-template-columns:1fr 1fr}}
 .btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 16px;border-radius:10px;font-size:13.5px;cursor:pointer;font-family:inherit}
 .btn:hover{background:#faf6ea}
 .btn.primary{background:var(--rc,var(--ink));border-color:var(--rc,var(--ink));color:#fff;font-weight:700}
@@ -370,15 +372,27 @@ td select{padding:4px 6px;font-size:12px;width:auto}
 
   <div class="card">
     <h3>投稿実績ログ（API取得分・手入力分）</h3>
+    <p class="hint" style="margin-bottom:10px">数字を埋めるだけでOKです。投稿本文を見れば分かる内容は入力不要です。</p>
+    <div class="field"><label>投稿本文・概要</label><input id="ins-summary" placeholder="例：外反母趾×かかと固定の投稿"></div>
     <div class="grid2">
-      <div class="field"><label>投稿の概要</label><input id="ins-summary" placeholder="例：外反母趾×かかと固定の投稿"></div>
-      <div class="field"><label>いいね数／返信数</label><input id="ins-numbers" placeholder="例：12 / 3"></div>
+      <div class="field"><label>対象読者</label>
+        <select id="ins-target"><option selected>一般向け</option><option>セラピスト向け</option></select></div>
+      <div class="field"><label>投稿日（任意・空欄なら今日）</label><input type="date" id="ins-date"></div>
     </div>
-    <div class="btnrow" style="margin-bottom:12px"><button class="btn small" id="btn-add-insight">手動で1件追加</button></div>
+    <div class="grid4">
+      <div class="field"><label>いいね</label><input type="number" min="0" id="ins-likes" placeholder="0"></div>
+      <div class="field"><label>保存数</label><input type="number" min="0" id="ins-saves" placeholder="0"></div>
+      <div class="field"><label>返信数</label><input type="number" min="0" id="ins-replies" placeholder="0"></div>
+      <div class="field"><label>閲覧数</label><input type="number" min="0" id="ins-views" placeholder="0"></div>
+    </div>
+    <div class="btnrow" style="margin-bottom:12px"><button class="btn small" id="btn-add-insight">この内容で1件追加</button></div>
     <table id="insight-table">
-      <thead><tr><th>日時</th><th>投稿概要</th><th>いいね</th><th>返信</th><th>取得方法</th><th></th></tr></thead>
+      <thead><tr><th>日付</th><th>投稿概要</th><th>対象</th><th>いいね</th><th>保存</th><th>返信</th><th>閲覧</th><th>取得方法</th><th></th></tr></thead>
       <tbody></tbody>
     </table>
+    <div class="btnrow" style="margin-top:12px">
+      <button class="btn" id="btn-send-insights">この一覧をリサーチ担当（振り返り）へ送る</button>
+    </div>
   </div>
 
   <div class="card">
