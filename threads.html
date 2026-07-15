@@ -306,6 +306,26 @@ td select{padding:4px 6px;font-size:12px;width:auto}
     <p class="hint" style="margin-top:8px">「承認待ち」＝投稿前の薬機法・内容チェック待ちの状態。ここを必ず通してから投稿してください。</p>
   </div>
   <div class="card">
+    <h3>バズ投稿ストック（見つけたらここに保存）</h3>
+    <p class="hint" style="margin-bottom:10px">気になった投稿を見つけたら、その場で保存。VaultやClaude Codeを開く必要はありません。溜まったら「リサーチ担当へ送る」でまとめて分析に回せます。</p>
+    <div class="field"><label>投稿本文</label><textarea id="bz-text" rows="3" placeholder="気になったバズ投稿の本文をそのまま貼り付け"></textarea></div>
+    <div class="grid2">
+      <div class="field"><label>投稿者（任意）</label><input id="bz-author" placeholder="@example"></div>
+      <div class="field"><label>気になった理由（任意）</label><input id="bz-reason" placeholder="例：フックが強い／保存されそう"></div>
+    </div>
+    <div class="btnrow" style="margin-bottom:14px">
+      <button class="btn primary small" id="btn-add-buzz">ストックに保存</button>
+    </div>
+    <table id="buzz-table">
+      <thead><tr><th>投稿本文</th><th>投稿者</th><th>理由</th><th>日付</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="btnrow" style="margin-top:12px">
+      <button class="btn" id="btn-send-buzz">この一覧をリサーチ担当へ送る（<span id="buzz-count">0</span>件）</button>
+      <button class="btn small danger" id="btn-clear-buzz">ストックを全部クリア</button>
+    </div>
+  </div>
+  <div class="card">
     <h3>見込み客リスト（興味を示した人）</h3>
     <div class="grid2">
       <div class="field"><label>アカウント名・名前</label><input id="ld-name" placeholder="@example"></div>
