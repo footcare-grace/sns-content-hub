@@ -155,6 +155,18 @@ td select{padding:4px 6px;font-size:12px;width:auto}
       <span class="saved-flash" id="axis-saved">保存しました ✓</span>
     </div>
   </div>
+  <div class="card">
+    <h3>運用メモ（勝ちパターン・負けパターン）</h3>
+    <p class="hint" style="margin-bottom:10px">リサーチ担当で「バズ投稿分析」「自分の投稿の振り返り」をClaudeに実行させたら、その結論（勝ちパターン・避けるべきパターン）をここに貼って保存してください。<b>一度保存すれば、以降は企画担当・編集担当のプロンプトに自動で毎回反映されます。</b>毎回貼り直す必要はありません。次に分析した時だけ、ここを上書きしてください。</p>
+    <div class="field">
+      <textarea id="ax-learnings" rows="6" placeholder="例：&#10;・数字を冒頭に置くフックが保存されやすい&#10;・「〜な人へ」という対象明示から入る投稿は反応が薄い&#10;・体験談型はセラピスト向けで特に伸びる"></textarea>
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" id="btn-save-learnings">運用メモを保存する</button>
+      <span class="saved-flash" id="learnings-saved">保存しました ✓</span>
+    </div>
+    <p class="hint" id="learnings-status" style="margin-top:8px"></p>
+  </div>
   <div class="outbox" id="out-strategy-wrap" style="display:none">
     <div class="out-head"><h3>生成されたプロンプト</h3><button class="copy-btn" data-out="out-strategy">コピー</button></div>
     <pre id="out-strategy"></pre>
