@@ -59,13 +59,25 @@ function saveLearnings(){try{localStorage.setItem(LS.learnings,learnings);}catch
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
 /* ================= 役割切り替え ================= */
-$$(".role").forEach(b=>b.addEventListener("click",()=>{
+function switchRole(r){
   $$(".role").forEach(x=>x.classList.remove("on"));
   $$(".pane").forEach(x=>x.classList.remove("on"));
-  b.classList.add("on");
-  $("#pane-"+b.dataset.r).classList.add("on");
+  const btn=$(`.role[data-r="${r}"]`);
+  if(btn)btn.classList.add("on");
+  $("#pane-"+r).classList.add("on");
   renderAxisBanners();
+}
+$$(".role").forEach(b=>b.addEventListener("click",()=>switchRole(b.dataset.r)));
+$$(".flowmap-card").forEach(c=>c.addEventListener("click",()=>{
+  switchRole(c.dataset.goto);
+  document.querySelector(".layout").scrollIntoView({behavior:"smooth",block:"start"});
 }));
+
+/* ================= このハブについて ================= */
+$("#about-toggle")?.addEventListener("click",()=>{
+  $("#about-toggle").classList.toggle("open");
+  $("#about-panel").classList.toggle("open");
+});
 
 /* ================= 戦略責任者：軸の管理 ================= */
 function axisFields(){

@@ -15,12 +15,23 @@ const HALLUCINATION_RULES=`■ 情報の正確性（絶対ルール）
 - 商品データと矛盾する情報は書かないこと`;
 
 /* ================= 役割切り替え ================= */
-$$(".role").forEach(b=>b.addEventListener("click",()=>{
+function switchRole(r){
   $$(".role").forEach(x=>x.classList.remove("on"));
   $$(".pane").forEach(x=>x.classList.remove("on"));
-  b.classList.add("on");
-  $("#pane-"+b.dataset.r).classList.add("on");
+  const btn=$(`.role[data-r="${r}"]`);
+  if(btn)btn.classList.add("on");
+  $("#pane-"+r).classList.add("on");
+}
+$$(".role").forEach(b=>b.addEventListener("click",()=>switchRole(b.dataset.r)));
+$$(".flowmap-card").forEach(c=>c.addEventListener("click",()=>{
+  switchRole(c.dataset.goto);
+  document.querySelector(".layout").scrollIntoView({behavior:"smooth",block:"start"});
 }));
+
+$("#about-toggle")?.addEventListener("click",()=>{
+  $("#about-toggle").classList.toggle("open");
+  $("#about-panel").classList.toggle("open");
+});
 
 /* ================= 投稿制作担当 ================= */
 /* 商品プルダウン構築 */

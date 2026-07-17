@@ -93,6 +93,35 @@ td select{padding:4px 6px;font-size:12px;width:auto}
 .empty-row{text-align:center;color:var(--sub);padding:22px 10px;font-size:12.5px}
 .checkline{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:12px}
 .checkline input{width:auto;cursor:pointer}
+
+/* ===== 進め方マップ ===== */
+.flowmap-wrap{background:#fff;border-bottom:1px solid var(--line);padding:14px 22px}
+.flowmap-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.flowmap-head h2{font-size:12.5px;font-weight:700;color:var(--sub)}
+.flowmap-head p{font-size:11px;color:var(--sub);opacity:.85}
+.flowmap-row{display:flex;gap:6px;flex-wrap:wrap;align-items:stretch}
+.flowmap-step{display:flex;align-items:center;gap:6px}
+.flowmap-card{background:#fffefb;border:1.5px solid var(--line);border-radius:11px;padding:8px 12px;min-width:150px;cursor:pointer;transition:.12s}
+.flowmap-card:hover{border-color:var(--rc,#8a8676);background:#f8fbf9}
+.flowmap-card .fm-role{font-size:12px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:5px}
+.flowmap-card .fm-role::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--rc,#8a8676);flex:none}
+.flowmap-card .fm-action{font-size:10.5px;color:var(--sub);margin-top:2px;line-height:1.4}
+.flowmap-arrow{color:var(--line);font-size:16px;align-self:center;flex:none}
+@media(max-width:820px){.flowmap-row{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.flowmap-card{min-width:130px;flex:none}}
+
+/* ===== このハブについて ===== */
+.about-toggle{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--sub);background:none;border:none;cursor:pointer;padding:4px 0;font-family:inherit}
+.about-toggle:hover{color:var(--ink)}
+.about-toggle .arrow{transition:transform .15s}
+.about-toggle.open .arrow{transform:rotate(90deg)}
+.about-panel{display:none;background:#fbfaf5;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:10px;font-size:12.5px;line-height:1.75}
+.about-panel.open{display:block}
+.about-panel dt{font-weight:700;color:var(--ink);margin-top:10px}
+.about-panel dt:first-child{margin-top:0}
+.about-panel dd{color:var(--sub);margin-left:0}
+.about-panel .flow-mini{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:4px}
+.about-panel .flow-mini span{background:#fff;border:1px solid var(--line);border-radius:7px;padding:2px 8px;font-size:11px}
+.about-panel .flow-mini .sep{border:none;background:none;padding:0;color:var(--line)}
 </style>
 </head>
 <body>
@@ -101,6 +130,37 @@ td select{padding:4px 6px;font-size:12px;width:auto}
   <h1>Threads運営チームハブ</h1>
   <span class="st">6役割×戦略軸共有｜API不要・プロンプト生成方式</span>
 </header>
+
+<div class="flowmap-wrap">
+  <div class="flowmap-head"><h2>📍 進め方マップ</h2><p>迷ったら①から。カードをクリックするとその役割に移動します</p></div>
+  <div class="flowmap-row">
+    <div class="flowmap-step"><div class="flowmap-card" data-goto="strategy" style="--rc:var(--r-strategy)"><div class="fm-role">①戦略責任者</div><div class="fm-action">最初に1回だけ、軸を設定</div></div><span class="flowmap-arrow">→</span></div>
+    <div class="flowmap-step"><div class="flowmap-card" data-goto="research" style="--rc:var(--r-research)"><div class="fm-role">②リサーチ担当</div><div class="fm-action">月1回、バズ・実績を分析</div></div><span class="flowmap-arrow">→</span></div>
+    <div class="flowmap-step"><div class="flowmap-card" data-goto="plan" style="--rc:var(--r-plan)"><div class="fm-role">③企画担当</div><div class="fm-action">週の頭に1週間分のネタ出し</div></div><span class="flowmap-arrow">→</span></div>
+    <div class="flowmap-step"><div class="flowmap-card" data-goto="edit" style="--rc:var(--r-edit)"><div class="fm-role">④編集担当</div><div class="fm-action">企画をもとに投稿文を作成</div></div><span class="flowmap-arrow">→</span></div>
+    <div class="flowmap-step"><div class="flowmap-card" data-goto="marketing" style="--rc:var(--r-marketing)"><div class="fm-role">⑤マーケ担当</div><div class="fm-action">Note誘導・提携文（必要な時）</div></div><span class="flowmap-arrow">→</span></div>
+    <div class="flowmap-step"><div class="flowmap-card" data-goto="secretary" style="--rc:var(--r-secretary)"><div class="fm-role">⑥秘書担当</div><div class="fm-action">ストック・記録・進行管理</div></div></div>
+  </div>
+  <button class="about-toggle" id="about-toggle"><span class="arrow">▶</span>このハブについて（第三者向け説明）</button>
+  <div class="about-panel" id="about-panel">
+    <dl>
+      <dt>🎯 目的</dt>
+      <dd>Threads投稿の企画・作成・実績管理を一気通貫で行うハブです。</dd>
+      <dt>📦 成果物</dt>
+      <dd>Threads投稿文（1〜10本、薬機法チェック済み）</dd>
+      <dt>🔄 できあがるまでの流れ</dt>
+      <dd class="flow-mini">
+        <span>①軸を設定</span><span class="sep">→</span>
+        <span>②月1分析</span><span class="sep">→</span>
+        <span>③週1企画</span><span class="sep">→</span>
+        <span>④投稿文作成</span><span class="sep">→</span>
+        <span>⑤誘導文（必要時）</span>
+      </dd>
+      <dt>✨ 特徴</dt>
+      <dd>ナレッジ・過去の分析結果（運用メモ）・薬機法制約が全生成に自動で組み込まれます。バズ投稿・実績データはブラウザ内に蓄積され、ワンクリックで分析に回せます。</dd>
+    </dl>
+  </div>
+</div>
 
 <div class="layout">
 <aside id="roster">
