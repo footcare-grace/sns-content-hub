@@ -228,9 +228,8 @@ $("#btn-gen-prompt").addEventListener("click",()=>{
   const sub=$("#sub-title").value.trim()||preset.sub[0];
   const badge=$("#badge-text").value.trim()||preset.badge[0];
 
-  const prompt=`あなたはNoteサムネイルのアートディレクターです。以下のテーマ・基準デザインに沿って、サムネイル用のプロンプトを作成してください。
-
-【テーマ】
+  /* ---- ①企画メモ（コンセプト・タイトル案・視認性チェック。参考資料であり、AIに渡さない） ---- */
+  const conceptText=`【テーマ】
 ${t.title}
 
 【基準デザイン（全テーマ共通・必ず踏襲）】
@@ -239,7 +238,6 @@ ${t.title}
 - 右側に医学イラスト（骨格・関節の線画タッチ、紺の線）
 - 痛み・問題の発生箇所にオレンジ色の光彩・警告マークで強調
 
----
 【サムネイルコンセプト】
 ペルソナ：${p?p.general.name:"（テーマの一般読者）"}
 狙う心理：${p?p.general.future:"不安の言語化と、変われるかもしれないという希望"}
@@ -264,9 +262,16 @@ ${t.title}
 ・配置：左側テキスト／右側イラストの2分割構成
 ・挿絵・アイコン：このテーマに合った部位（${t.title.replace(/テーマ\d+：/,"")}に関連する足・関節）の医学線画イラスト。問題箇所をオレンジで強調
 
-【Gemini用プロンプト】
-（日本語テキスト込みで1枚完成させる場合）
-アスペクト比16:9、解像度1280×720pxのNote記事サムネイル画像を作成してください。
+【視認性チェックポイント】
+・濃紺の文字×薄グレー背景のコントラスト比が十分か（文字がくっきり読めるか）
+・スマホの一覧表示（幅150px程度の縮小サイズ）でもメインタイトルが読めるか
+・オレンジのバッジが背景に埋もれず、最初に目に入るアクセントになっているか
+・イラストの線が細すぎて縮小時に消えていないか
+
+※下の②③が、実際にGemini/ChatGPTに貼るプロンプトです。この企画メモ自体は貼らないでください。`;
+
+  /* ---- ②Gemini用プロンプト（単体で完結・そのままコピペしてよい） ---- */
+  const geminiPrompt=`アスペクト比16:9、解像度1280×720pxのNote記事サムネイル画像を作成してください。
 
 ■ レイアウト（数値指定・厳守）
 - 背景：薄いグレー〜青みグレー（#e7ebf1〜#eef1f5のグラデーション）に、間隔76px程度の細い方眼グリッド線（色は背景よりわずかに濃い程度、目立たせない）
@@ -294,9 +299,10 @@ ${t.title}
 - 写真的な質感・3Dレンダリング表現を使わないこと（線画・フラットデザインで統一）
 - テキストを縁取り・立体化させないこと（フラットな単色で表示）
 
-【ChatGPT用プロンプト】
-（ビジュアルのみ生成・テキストは後からこのメーカーで合成する場合）
-アスペクト比16:9の横長イラスト素材を作成してください。
+※期待通りの結果が出ない場合は、上記の「禁止事項」に該当する要素（影・グラデーション・余計な色）が入っていないか確認し、該当箇所だけ再指示してください。`;
+
+  /* ---- ③ChatGPT用プロンプト（単体で完結・そのままコピペしてよい） ---- */
+  const chatgptPrompt=`アスペクト比16:9の横長イラスト素材を作成してください。
 
 ■ 背景・配置（数値指定・厳守）
 - 背景は透明、または薄いグレー（#eef1f5）の単色のみ
@@ -316,34 +322,36 @@ ${t.title}
 - グラデーション・ネオン風グローを使わないこと（オレンジの光彩マーク以外）
 - 背景に模様・グリッド線を入れないこと（それはこのツール側で別途重ねるため）
 
-【視認性チェックポイント】
-・濃紺の文字×薄グレー背景のコントラスト比が十分か（文字がくっきり読めるか）
-・スマホの一覧表示（幅150px程度の縮小サイズ）でもメインタイトルが読めるか
-・オレンジのバッジが背景に埋もれず、最初に目に入るアクセントになっているか
-・イラストの線が細すぎて縮小時に消えていないか
----
+※生成した画像は、このサムネイルメーカーの「③イラストを入れる」からアップロードすると、文字と自動合成できます。`;
 
-※期待通りの結果が出ない場合は、上記の「禁止事項」に該当する要素（影・グラデーション・余計な色）が入っていないか確認し、該当箇所だけ再指示してください。全部を一から作り直す必要はありません。
-※ChatGPT用で生成した画像は、このサムネイルメーカーの「③イラストを入れる」からアップロードすると、文字と自動合成できます。`;
-
-  $("#out-prompt").textContent=prompt;
-  $("#out-prompt").classList.remove("empty");
+  $("#out-concept").textContent=conceptText;
+  $("#out-concept").classList.remove("empty");
+  $("#out-gemini").textContent=geminiPrompt;
+  $("#out-gemini").classList.remove("empty");
+  $("#out-chatgpt").textContent=chatgptPrompt;
+  $("#out-chatgpt").classList.remove("empty");
   $("#prompt-wrap").style.display="block";
 });
 
-$("#btn-copy-prompt").addEventListener("click",async()=>{
-  const out=$("#out-prompt");
-  if(!out.textContent.trim()){alert("先にプロンプトを生成してください");return;}
-  try{await navigator.clipboard.writeText(out.textContent);}
-  catch(e){
-    const rg=document.createRange();rg.selectNodeContents(out);
-    const sel=getSelection();sel.removeAllRanges();sel.addRange(rg);
-    document.execCommand("copy");sel.removeAllRanges();
-  }
-  const b=$("#btn-copy-prompt");
-  b.textContent="コピーしました ✓";b.classList.add("ok");
-  setTimeout(()=>{b.textContent="コピー";b.classList.remove("ok");},1800);
-});
+function bindCopyBtn(btnId,outId){
+  $(btnId).addEventListener("click",async()=>{
+    const out=$(outId);
+    if(!out.textContent.trim()){alert("先に生成ボタンを押してください");return;}
+    try{await navigator.clipboard.writeText(out.textContent);}
+    catch(e){
+      const rg=document.createRange();rg.selectNodeContents(out);
+      const sel=getSelection();sel.removeAllRanges();sel.addRange(rg);
+      document.execCommand("copy");sel.removeAllRanges();
+    }
+    const b=$(btnId);
+    const original=b.textContent;
+    b.textContent="コピーしました ✓";b.classList.add("ok");
+    setTimeout(()=>{b.textContent=original;b.classList.remove("ok");},1800);
+  });
+}
+bindCopyBtn("#btn-copy-concept","#out-concept");
+bindCopyBtn("#btn-copy-gemini","#out-gemini");
+bindCopyBtn("#btn-copy-chatgpt","#out-chatgpt");
 
 /* ================= 初期描画 ================= */
 draw();
