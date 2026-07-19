@@ -107,6 +107,16 @@ $("#btn-gen-post").addEventListener("click",()=>{
   const painMatch=prod.body.match(/解決する悩み[：:]\s*(.+)/);
   const painList=painMatch?painMatch[1].trim():"";
 
+  /* 商品データから技術情報を自動抽出（商品を見せるスライドのラベル精度を上げる） */
+  const techLines=[];
+  const techMatch=prod.body.match(/独自技術[：:]\s*(.+)/);
+  if(techMatch)techLines.push(`独自技術：${techMatch[1].trim()}`);
+  const expMatch=prod.body.match(/実験結果[：:]\s*(.+)/);
+  if(expMatch)techLines.push(`実験結果：${expMatch[1].trim()}`);
+  const roleMatch=prod.body.match(/(?:①②③|の役割)[：:]\s*(.+)/);
+  if(roleMatch)techLines.push(roleMatch[1].trim());
+  const techDetail=techLines.join("\n");
+
   /* ---- ① ChatGPT用・画像生成プロンプト（スライドごとに1枚ずつ） ---- */
   const wrap=$("#image-slides");
   wrap.innerHTML="";
@@ -125,6 +135,7 @@ ${slide.role}：${slide.desc}
 ■ 商品情報（このシリーズ全体で共通）
 ${productName}｜SPIRAL TURNのオーダーメイドインソール
 訴求ポイント：${points}
+${(needsProduct&&techDetail)?`\n■ この商品の具体的な技術情報（ラベル・キャッチコピーの参考にすること。想像で補わずこの内容を使うこと）\n${techDetail}`:""}
 
 ■ シリーズ全体としての統一感（必ず守ること）
 - 背景は清潔感のある白〜薄いグレーで、${structure.length}枚を通して同じトーンにすること
