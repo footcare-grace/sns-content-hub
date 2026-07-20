@@ -99,27 +99,46 @@ const cv=$("#thumb-canvas"),ctx=cv.getContext("2d");
 const W=1280,H=670;
 
 function draw(){
-  /* --- 背景：薄グレー＋方眼グリッド --- */
+  const isDark=bgTone==="dark";
+  const COL={
+    bg1:isDark?"#141b2e":"#eef1f5",
+    bg2:isDark?"#0d1220":"#e7ebf1",
+    grid:isDark?"rgba(255,255,255,0.06)":"rgba(30,42,74,0.07)",
+    accent:isDark?"#e8681a":"#1e2a4a",
+    title:isDark?"#ffffff":"#1e2a4a",
+    sub:"#e8681a",
+    chainBox:isDark?"#1e2a4a":"#ffffff",
+    chainBoxBorder:isDark?"#3a4a6a":"#1e2a4a",
+    chainText:isDark?"#ffffff":"#1e2a4a",
+    chainArrow:isDark?"#e8681a":"#e8681a"
+  };
+
+  /* --- 背景 --- */
   ctx.clearRect(0,0,W,H);
   const bgGrad=ctx.createLinearGradient(0,0,W,H);
-  bgGrad.addColorStop(0,"#eef1f5");
-  bgGrad.addColorStop(1,"#e7ebf1");
+  bgGrad.addColorStop(0,COL.bg1);
+  bgGrad.addColorStop(1,COL.bg2);
   ctx.fillStyle=bgGrad;
   ctx.fillRect(0,0,W,H);
 
-  ctx.strokeStyle="rgba(30,42,74,0.07)";
+  ctx.strokeStyle=COL.grid;
   ctx.lineWidth=1;
   const grid=76;
   for(let x=grid;x<W;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
   for(let y=grid;y<H;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
 
-  /* --- 左端の紺アクセント縦線 --- */
-  ctx.fillStyle="#1e2a4a";
+  /* --- 左端アクセント縦線 --- */
+  ctx.fillStyle=COL.accent;
   ctx.fillRect(34,30,5,H-60);
 
-  /* --- イラスト（右側配置） --- */
+  /* --- 因果連鎖図 or イラスト（右側配置。連鎖図がONならそちら優先） --- */
+  const chainOn=document.getElementById("chain-toggle")?.checked;
   const hasImg=!!uploadedImg;
-  if(hasImg){
+  const showChain=chainOn&&currentTheme&&CHAIN_PRESETS[currentTheme];
+
+  if(showChain){
+    drawChainDiagram(CHAIN_PRESETS[currentTheme],COL);
+  }else if(hasImg){
     const areaX=W*0.52,areaW=W-areaX-20,areaY=20,areaH=H-40;
     const r=Math.min(areaW/uploadedImg.width,areaH/uploadedImg.height);
     const dw=uploadedImg.width*r,dh=uploadedImg.height*r;
@@ -129,9 +148,9 @@ function draw(){
     ctx.globalAlpha=1;
   }
 
-  /* --- テキスト描画エリア（イラスト有無で幅を変える） --- */
+  /* --- テキスト描画エリア --- */
   const textX=76;
-  const maxW=hasImg?W*0.46:W*0.80;
+  const maxW=(hasImg||showChain)?W*0.46:W*0.80;
 
   const main=$("#main-title").value.trim();
   const sub=$("#sub-title").value.trim();
@@ -146,7 +165,7 @@ function draw(){
     let lines=wrapText(main,maxW,size);
     while(lines.length>3&&size>54){size-=6;lines=wrapText(main,maxW,size);}
     ctx.font=`bold ${size}px "Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif`;
-    ctx.fillStyle="#1e2a4a";
+    ctx.fillStyle=COL.title;
     lines.forEach(line=>{
       ctx.fillText(line,textX,y);
       y+=size*1.22;
@@ -162,7 +181,7 @@ function draw(){
       size-=2;
       ctx.font=`bold ${size}px "Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif`;
     }
-    ctx.fillStyle="#e8681a";
+    ctx.fillStyle=COL.sub;
     ctx.fillText(sub,textX,y);
     y+=size*0.6+46;
   }
@@ -181,11 +200,60 @@ function draw(){
     const bw=tw+padX*2;
     const by=y-size;
     roundRect(textX,by-17,bw,bh,bh/2);
-    ctx.fillStyle="#e8681a";
+    ctx.fillStyle=COL.sub;
     ctx.fill();
     ctx.fillStyle="#fff";
     ctx.fillText(badge,textX+padX,by+size-14);
   }
+}
+
+/* ================= 因果連鎖図の描画（箱＋矢印・AI不使用で安定生成） ================= */
+function drawChainDiagram(steps,COL){
+  const areaX=W*0.52,areaW=W-areaX-40;
+  const boxH=88,gapY=26;
+  const totalH=steps.length*boxH+(steps.length-1)*gapY;
+  let startY=(H-totalH)/2;
+  const boxW=areaW;
+
+  steps.forEach((text,i)=>{
+    const by=startY+i*(boxH+gapY);
+    const bx=areaX;
+
+    /* 矢印（2つ目以降） */
+    if(i>0){
+      const ay1=by-gapY,ay2=by;
+      const ax=bx+boxW/2;
+      ctx.strokeStyle=COL.chainArrow;
+      ctx.lineWidth=4;
+      ctx.beginPath();ctx.moveTo(ax,ay1+2);ctx.lineTo(ax,ay2-4);ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(ax-9,ay2-14);ctx.lineTo(ax,ay2-2);ctx.lineTo(ax+9,ay2-14);
+      ctx.strokeStyle=COL.chainArrow;ctx.lineWidth=4;ctx.lineJoin="round";ctx.stroke();
+    }
+
+    /* 箱 */
+    ctx.fillStyle=i===steps.length-1?COL.chainArrow:COL.chainBox;
+    roundRect(bx,by,boxW,boxH,12);
+    ctx.fill();
+    ctx.strokeStyle=i===steps.length-1?COL.chainArrow:COL.chainBoxBorder;
+    ctx.lineWidth=2.5;
+    roundRect(bx,by,boxW,boxH,12);
+    ctx.stroke();
+
+    /* テキスト（自動改行対応・中央揃え） */
+    let size=25;
+    ctx.font=`bold ${size}px "Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif`;
+    const innerW=boxW-36;
+    let lines=wrapText(text,innerW,size);
+    while(lines.length>2&&size>17){size-=2;ctx.font=`bold ${size}px "Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif`;lines=wrapText(text,innerW,size);}
+    ctx.fillStyle=i===steps.length-1?"#ffffff":COL.chainText;
+    ctx.textAlign="center";
+    const lineH=size*1.3;
+    const blockH=lines.length*lineH;
+    let ty=by+boxH/2-blockH/2+size*0.85;
+    lines.forEach(line=>{ctx.fillText(line,bx+boxW/2,ty);ty+=lineH;});
+    ctx.textAlign="left";
+  });
 }
 
 function wrapText(text,maxW,size){
@@ -285,11 +353,18 @@ ${t.title}
 - バッジ「${badge}」：オレンジ（#e8681a）の角丸長方形（角丸の半径は高さの50%＝ピル型）。内側の余白は文字の上下に高さの30%ずつ、左右に文字幅の25%ずつ。バッジの中の文字は白・太字
 - 使用する文字色は「濃紺」「オレンジ」「白」の3色のみ。他の色は一切使わないこと
 
-■ イラスト
+■ イラスト（医学書・学術論文の図解のような、正確で権威性のあるスタイルにすること）
 - ${t.title.replace(/テーマ\d+：/,"").replace(/（.+）/,"")}に関連する足・関節部位の医学的な線画イラスト
-- 線の色は濃紺（#1e2a4a）、解剖学の専門書のような正確で美しい図解タッチ
+- スタイルの参考：整形外科の教科書・理学療法の専門書に載っているような図解。均一な線の太さ、正確な解剖学的比率、装飾のないフラットな2Dベクター画風
+- 線の色は濃紺（#1e2a4a）、太さは全体を通して均一にすること（部位によって線の強弱をつけない）
 - 問題・痛みの発生箇所に、オレンジ色（#e8681a）の光彩・放射状の強調マークを1箇所入れる
 - イラストは右側の領域内に収め、上下左右に画面高さの3%程度の余白を残す
+
+■ AI生成特有の不自然さを避けるための指示（重要）
+- 手や指を描く場合、本数・関節の数を解剖学的に正確にすること（余分な指・不自然な関節を描かない）
+- 左右対称であるべき部位（骨盤・肩など）は、正確に対称に描くこと
+- 単一のイラストスタイルで統一し、部分ごとに画風が変わらないようにすること
+- 実在の医学教科書の図解を模写するような、事実に忠実な表現にすること（誇張・デフォルメをしない）
 
 ■ 禁止事項（厳守）
 - ドロップシャドウ（影）を一切使わないこと
@@ -309,10 +384,16 @@ ${t.title}
 - 画像の左側46%は完全に空白（何も配置しない余白）にすること
 - イラストは右側54%の領域内に収め、上下は画像高さの3%ずつ余白を残すこと
 
-■ イラスト仕様
+■ イラスト仕様（医学書・学術論文の図解のような、正確で権威性のあるスタイルにすること）
 - ${t.title.replace(/テーマ\d+：/,"").replace(/（.+）/,"")}に関連する足・関節部位の医学的な線画イラスト
-- 線の色は濃紺（#1e2a4a）の単色のみ。解剖学の専門書のような正確で美しい図解タッチ
+- スタイルの参考：整形外科の教科書・理学療法の専門書に載っているような図解。均一な線の太さ、正確な解剖学的比率、装飾のないフラットな2Dベクター画風
+- 線の色は濃紺（#1e2a4a）の単色のみ、太さは全体を通して均一にすること
 - 問題・痛みの発生箇所に、オレンジ色（#e8681a）の光彩・放射状の強調マークを1箇所だけ入れる
+
+■ AI生成特有の不自然さを避けるための指示（重要）
+- 手や指を描く場合、本数・関節の数を解剖学的に正確にすること
+- 左右対称であるべき部位は、正確に対称に描くこと
+- 単一のイラストスタイルで統一すること（部分ごとに画風が変わらないこと）
 
 ■ 禁止事項（厳守）
 - 文字・テキスト・数字・ロゴを一切含めないこと
@@ -355,3 +436,30 @@ bindCopyBtn("#btn-copy-chatgpt","#out-chatgpt");
 
 /* ================= 初期描画 ================= */
 draw();
+
+/* ================= 因果連鎖図データ（14テーマ・knowledge_summary.mdの連鎖ロジックより） ================= */
+const CHAIN_PRESETS={
+theme01:["座りっぱなし","体幹が使えない","骨盤がグネグネ動く","腰への負担蓄積"],
+theme02:["厚底靴・パンプス","指が使えない","脳が指を忘れる","外反母趾が進行"],
+theme03:["睡眠中に足底筋膜が短縮","起床時に急に伸ばされる","組織が再断裂","朝一歩目の激痛"],
+theme04:["柔らかい靴・サンダル","指が使われない","センサー機能が低下","浮き指・ハンマートウ"],
+theme05:["MTP関節が硬い","内側ホイップが発生","脛骨が外旋","ふくらはぎが外に張る"],
+theme06:["表層筋ばかり使う","深層筋のポンプが働かない","毛細血管の循環が悪化","ふくらはぎのだるさ"],
+theme07:["浮き指・足指の握力低下","地面からの情報が届かない","バランス反応が遅れる","転倒リスク上昇"],
+theme08:["筋肉ポンプが働かない","静脈・リンパの回収が滞る","1日20Lの体液が滞留","夕方のむくみ"],
+theme09:["靭帯が緩む（13歳以降は固定）","土踏まずが潰れる","ニーインポジション","膝への負担増加"],
+theme10:["大人用の靴を縮小しただけ","MTP関節が曲がらない","足の骨化が妨げられる","足の変形が定着"],
+theme11:["歩行時だけ指が浮く","足指が地面の情報を拾えない","体幹が支えられない","猫背・姿勢の崩れ"],
+theme12:["足元の崩れ","脛骨のねじれ","膝蓋骨の位置ずれ","軟部組織の擦り潰し"],
+theme13:["骨盤の後傾・スマホ姿勢","大腿骨頭が前方へ","お尻の筋肉が反応しない","股関節の痛み"],
+theme14:["捻挫で靭帯を損傷","内出血が組織と癒着","パチニ小体の機能不全","捻挫を繰り返す悪循環"]
+};
+
+/* ================= 背景トーン選択 ================= */
+let bgTone="light"; // "light" | "dark"
+document.addEventListener("DOMContentLoaded",()=>{
+  const toneSel=document.getElementById("bg-tone");
+  if(toneSel)toneSel.addEventListener("change",()=>{bgTone=toneSel.value;draw();});
+  const chainToggle=document.getElementById("chain-toggle");
+  if(chainToggle)chainToggle.addEventListener("change",()=>{draw();});
+});
