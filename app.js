@@ -617,6 +617,19 @@ $("#btn-send-buzz").addEventListener("click",()=>{
   $("#rs-input").value=combined;
   $("#rs-input").scrollIntoView({behavior:"smooth",block:"center"});
 });
+
+/* ================= 企画担当→編集担当への送信 ================= */
+$("#btn-send-plan").addEventListener("click",()=>{
+  const result=$("#pl-result").value.trim();
+  if(!result){alert("Claudeから返ってきた企画表を貼り付けてください");return;}
+  switchRole("edit");
+  document.querySelector(".layout").scrollIntoView({behavior:"smooth",block:"start"});
+  const knowledgeField=$("#ed-knowledge");
+  knowledgeField.value=(knowledgeField.value.trim()?knowledgeField.value.trim()+"\n\n":"")+`【企画担当からの1週間分の企画】\n${result}`;
+  knowledgeField.scrollIntoView({behavior:"smooth",block:"center"});
+  knowledgeField.focus();
+});
+
 $("#btn-clear-buzz").addEventListener("click",()=>{
   if(!buzzStock.length)return;
   if(!confirm(`ストック${buzzStock.length}件をすべて削除しますか？（リサーチ担当へ送った後の整理用です）`))return;
