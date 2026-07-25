@@ -487,8 +487,10 @@ $("#btn-gen-marketing").addEventListener("click",()=>{
   if(mkMode==="note"){
     const theme=$("#mk-theme").value.trim();
     if(!theme){alert("Note記事のテーマを入力してください");return;}
+    const target=$("#mk-target").value;
     const price=$("#mk-price").value;
     const what=$("#mk-note-what").value;
+    const isTherapist=target.includes("セラピスト");
     p=`あなたはNote販売のセールスライティングのプロです。以下の条件で「${what}」を設計してください。
 
 ${axisBlock()}
@@ -496,13 +498,12 @@ ${axisBlock()}
 ■ Note記事の情報
 - テーマ：${theme}
 - 価格：${price}
-- 主な読者：セラピスト層（ペルソナB）。一般読者も一部購入する想定
+- 対象読者：${target}${isTherapist?"（現場で使える具体性・患者説明にそのまま使える言い回しを重視）":"（悩みを抱える本人に語りかける文体。専門用語は言い換える）"}
 
 ■ 設計ルール（threads_takumiで実証済みの型）
 - PASONA構造（問題→煽らない共感→解決策提示→絞り込み→行動）をベースにすること
 - 無料部分と有料部分の境界＝「答えの直前」（問題の深刻さを伝えた後、解決策の直前で切る）
-- 有料部分の中身：具体的な手順・患者説明スクリプト・チェックリスト
-- 「6,000円のセミナーで教えている内容を${price.replace(/（.*）/,"")}でまとめました」の訴求を自然に入れること
+- 有料部分の中身：${isTherapist?"具体的な手順・患者説明スクリプト・チェックリスト":"具体的な改善手順・実践できるステップ"}
 - 過度な煽り・誇大表現は使わないこと
 
 ${YAKKIHO_RULES}
