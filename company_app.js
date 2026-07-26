@@ -104,9 +104,21 @@ $("#btn-gen-post").addEventListener("click",()=>{
   const productName=prod.title.replace(/^[①-⑧]\s*/,"");
   const addThumb=$("#ps-hookthumb").checked;
 
-  /* 商品データから「解決する悩み」を自動抽出（サムネイル・1枚目の悩みスライドで使う） */
+  /* 商品データから悩み・問題提起の元ネタを自動抽出（サムネイル・1枚目の悩みスライドで使う） */
+  /* ①「解決する悩み」がある商品（WALK・BEAUTY）はそれを使う */
   const painMatch=prod.body.match(/解決する悩み[：:]\s*(.+)/);
-  const painList=painMatch?painMatch[1].trim():"";
+  /* ②ない商品（GOLF等）は「訴求」「ロジック」から代替の問題提起を組み立てる */
+  const appealMatch=prod.body.match(/訴求[：:]\s*(.+)/);
+  const logicMatch=prod.body.match(/ロジック[：:]\s*(.+)/);
+  let painList="";
+  if(painMatch){
+    painList=painMatch[1].trim();
+  }else if(appealMatch||logicMatch){
+    painList=[appealMatch?appealMatch[1].trim().replace(/^「|」$/g,""):"",logicMatch?logicMatch[1].trim():""].filter(Boolean).join("／");
+  }else if(psSelected.size){
+    /* ③どちらもなければ、選択中の訴求ポイントを最終フォールバックにする */
+    painList=[...psSelected].join("／");
+  }
 
   /* 商品データから技術情報を自動抽出（商品を見せるスライドのラベル精度を上げる） */
   const techLines=[];
