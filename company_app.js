@@ -100,10 +100,11 @@ $("#btn-gen-post").addEventListener("click",()=>{
   const isCompany=account==="company";
   const accountName=isCompany?"会社アカウント（SPIRAL TURN公式）":"取扱店専用アカウント";
   const slideCount=$("#ps-slides").value;
-  const structure=SLIDE_STRUCTURES[slideCount];
+  const baseStructure=SLIDE_STRUCTURES[slideCount];
   const productName=prod.title.replace(/^[①-⑧]\s*/,"");
+  const addThumb=$("#ps-hookthumb").checked;
 
-  /* 商品データから「解決する悩み」を自動抽出（1枚目の悩みスライドで具体的に使う） */
+  /* 商品データから「解決する悩み」を自動抽出（サムネイル・1枚目の悩みスライドで使う） */
   const painMatch=prod.body.match(/解決する悩み[：:]\s*(.+)/);
   const painList=painMatch?painMatch[1].trim():"";
 
@@ -117,14 +118,58 @@ $("#btn-gen-post").addEventListener("click",()=>{
   if(roleMatch)techLines.push(roleMatch[1].trim());
   const techDetail=techLines.join("\n");
 
-  /* ---- ① ChatGPT用・画像生成プロンプト（スライドごとに1枚ずつ） ---- */
+  /* サムネイルを先頭に追加する場合、構成配列そのものの先頭に差し込む（通し番号にするため） */
+  const structure=addThumb&&painList
+    ? [{role:"サムネイル（強いフック）",desc:"一瞬で「え、私のことだ」と思わせる、単体でも成立する強いフック",photo:false,isThumb:true},...baseStructure]
+    : baseStructure;
+  const totalCount=structure.length;
+
+  /* ---- ① ChatGPT用・画像生成プロンプト（スライドごとに1枚ずつ・通し番号） ---- */
   const wrap=$("#image-slides");
   wrap.innerHTML="";
   const allSlidePrompts=[];
   structure.forEach((slide,i)=>{
     const needsProduct=slide.photo;
-    const isPainSlide=(i===0 && !needsProduct);
-    const prompt=`【${slideCount}枚シリーズの${i+1}枚目／全${structure.length}枚】
+    const isPainSlide=(!slide.isThumb && i===(addThumb&&painList?1:0) && !needsProduct);
+    const isThumb=!!slide.isThumb;
+
+    let prompt;
+    if(isThumb){
+      prompt=`【${i+1}枚目／全${totalCount}枚：サムネイル】
+このスライドは商品写真の添付は必須ではありません。関連する写真があれば添付して構いません。
+
+Instagram投稿用の画像（縦長・アスペクト比4:5・推奨サイズ1080×1350px）を作成してください。
+このシリーズの先頭に置く「サムネイル」です。フィードをスクロールする指を止める強さを最優先にすること。
+
+■ このスライドの役割
+${slide.role}：${slide.desc}
+
+■ 商品情報（このシリーズ全体で共通）
+${productName}｜SPIRAL TURNのオーダーメイドインソール
+このスライドで扱う具体的な悩み：${painList}
+
+■ フックの型（このうち1つを選び、大きく1つのメッセージだけを打ち出すこと）
+- 断定型：「その不調、原因は足元です」等、悩みの正体を言い切る
+- 数字型：「◯人に1人が」等、統計的なインパクトを使う
+- 常識破壊型：「マッサージでは治らない理由」等、既存の対処法を否定する切り口
+- 問いかけ型：「その不調、諦めていませんか」等、強く刺さる一言だけの問いかけ
+
+■ シリーズ全体としての統一感（必ず守ること）
+- ブランドカラー（マゼンタピンク #e71773 をメインアクセントとして）を各スライドで一貫して使うこと
+- 左下または右下にブランドロゴ用の余白スペースを毎回同じ位置に空けておくこと
+
+■ このスライド固有のデザイン（後続スライドとは真逆の、サムネイル専用アプローチ）
+- 情報を詰め込まないこと。伝えるメッセージは1つだけに絞ること
+- 文字は画面の相当な面積を占めるくらい大きく、太く。小さいサムネイル表示でも一瞬で読めることを最優先にすること
+- 背景か文字のどちらかに、ブランドカラーを大胆に効かせること
+- 余白を活かした「説明」の構図ではなく、「衝撃・気づき」を与える構図にすること
+
+■ 避けること
+- 医療機器のような見た目・医療効果を想起させる表現
+- 複数のメッセージを1枚に詰め込むこと
+- スライド番号（例：${i+1}/${totalCount}等）・CTAボタン・チェックリスト等、装飾的な要素を追加すること`;
+    }else{
+      prompt=`【${i+1}枚目／全${totalCount}枚】
 ${needsProduct?"この文章と一緒に、HPの商品写真を添付してください。":`このスライドは商品写真の添付は必須ではありません（悩みへの共感を引き出す導入イラストのため）。ただし、関連する商品写真があれば添付して構いません。その場合は写真を活かしつつ悩みへの共感が伝わる構成にしてください。${isPainSlide&&painList?`扱う悩み：${painList}`:""}`}
 
 Instagram投稿用の画像（縦長・アスペクト比4:5・推奨サイズ1080×1350px）を作成してください。
@@ -138,7 +183,7 @@ ${productName}｜SPIRAL TURNのオーダーメイドインソール
 ${(needsProduct&&techDetail)?`\n■ この商品の具体的な技術情報（ラベル・キャッチコピーの参考にすること。想像で補わずこの内容を使うこと）\n${techDetail}`:""}
 
 ■ シリーズ全体としての統一感（必ず守ること）
-- 背景は清潔感のある白〜薄いグレーで、${structure.length}枚を通して同じトーンにすること
+- 背景は清潔感のある白〜薄いグレーで、${totalCount}枚を通して同じトーンにすること
 - ブランドカラー（マゼンタピンク #e71773 をメインアクセントとして）を各スライドで一貫して使うこと。ロゴと同じ色を使うことで、ブランドとしての統一感を出すこと
 - 左下または右下にブランドロゴ用の余白スペースを毎回同じ位置に空けておくこと
 - フォント・文字の入れ方（太さ・配置ルール）を全スライドで統一すること
@@ -151,59 +196,20 @@ ${needsProduct?"- 商品の特徴・使用シーンを示す短いテキスト�
 ■ 避けること
 - 医療機器のような見た目・医療効果を想起させる表現
 - ごちゃごちゃした情報過多のレイアウト
-- スライド番号（例：1/4、2/4等）・カテゴリラベル（例：「原因」「解決策」等の見出しバッジ）を追加しないこと
+- スライド番号（例：${i+1}/${totalCount}等）・カテゴリラベル（例：「原因」「解決策」等の見出しバッジ）を追加しないこと
 - 「無料カウンセリング」「今すぐ相談」等のCTAボタン・バナー・帯を追加しないこと（この指示で明示的に依頼していない限り、行動喚起ボタンは一切作らないこと）
 - チェックマーク付きの特徴リスト、権威性を示すアイコン群（特許・資格・実績バッジ等）など、この指示にない装飾要素を追加しないこと
 - このプロンプトで明示的に指定した文字・要素（タイトル・本文・ラベル・矢印）以外は、いかなる文字・図形・ボタンも追加しないこと。「広告として親切だろう」という判断で要素を足さないこと`;
+    }
+
     allSlidePrompts.push(`◆${i+1}枚目：${slide.role}\n${prompt}`);
 
     const card=document.createElement("div");
     card.className="slide-card";
-    card.innerHTML=`<div class="slide-head"><span>${i+1}枚目：${slide.role}</span><button class="copy-btn small" data-slide="${i}">コピー</button></div><pre>${prompt.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}</pre>`;
+    if(isThumb){card.style.borderColor="#e71773";}
+    card.innerHTML=`<div class="slide-head" ${isThumb?'style="background:#fde8f1;color:#e71773"':""}><span>${isThumb?"🎯 ":""}${i+1}枚目：${slide.role}</span><button class="copy-btn small" data-slide="${i}">コピー</button></div><pre>${prompt.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}</pre>`;
     wrap.appendChild(card);
   });
-
-  /* ---- 1枚目・強フックのサムネイル版（オプション） ---- */
-  if($("#ps-hookthumb").checked && painList){
-    const hookPrompt=`【1枚目の代替版／強いフックのサムネイル形式】
-このスライドは商品写真の添付は必須ではありません。関連する写真があれば添付して構いません。
-
-Instagram投稿用の画像（縦長・アスペクト比4:5・推奨サイズ1080×1350px）を作成してください。
-フィードをスクロールする指を止める、「サムネイル」としての強さを最優先にすること。
-
-■ このスライドの役割
-1枚目の代替版：説明的な導入ではなく、一瞬で「え、私のことだ」と思わせる強いフック
-
-■ 商品情報（このシリーズ全体で共通）
-${productName}｜SPIRAL TURNのオーダーメイドインソール
-このスライドで扱う具体的な悩み：${painList}
-
-■ フックの型（このうち1つを選び、大きく1つのメッセージだけを打ち出すこと）
-- 断定型：「その不調、原因は足元です」等、悩みの正体を言い切る
-- 数字型：「◯人に1人が」等、統計的なインパクトを使う
-- 常識破壊型：「マッサージでは治らない理由」等、既存の対処法を否定する切り口
-- 問いかけ型：「その不調、諦めていませんか」等、強く刺さる一言だけの問いかけ
-
-■ デザインの方向性（今までのスライドと真逆のアプローチにすること）
-- 情報を詰め込まないこと。チェックリストや複数の項目を並べず、伝えるメッセージは1つだけに絞ること
-- 文字は画面の相当な面積を占めるくらい大きく、太く。遠目・小さいサムネイル表示でも一瞬で読めることを最優先にすること
-- ブランドカラー（マゼンタピンク #e71773）を大胆に使い、背景か文字のどちらかに強く効かせること
-- 余白を活かした「説明」の構図ではなく、「衝撃・気づき」を与える構図にすること
-
-■ 避けること
-- 医療機器のような見た目・医療効果を想起させる表現
-- 複数のメッセージを1枚に詰め込むこと
-- スライド番号・CTAボタン・チェックリスト等、装飾的な要素を追加すること
-- 「1/4」等のこのシリーズであることを示す表記（これは単体のフック画像として使うため）`;
-
-    allSlidePrompts.push(`◆1枚目・強フックのサムネイル版\n${hookPrompt}`);
-
-    const hookCard=document.createElement("div");
-    hookCard.className="slide-card";
-    hookCard.style.borderColor="#e71773";
-    hookCard.innerHTML=`<div class="slide-head" style="background:#fde8f1;color:#e71773"><span>🎯 1枚目・強フックのサムネイル版</span><button class="copy-btn small" data-slide="hook">コピー</button></div><pre>${hookPrompt.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}</pre>`;
-    wrap.insertBefore(hookCard, wrap.firstChild);
-  }
 
   wrap.querySelectorAll("[data-slide]").forEach(b=>b.addEventListener("click",async()=>{
     const pre=b.closest(".slide-card").querySelector("pre");
@@ -237,8 +243,8 @@ ${accountName}${isCompany?`
 - 対象は導入を検討する施術者・整骨院・整体院オーナー。専門性と取扱メリットを重視すること`}
 
 ■ 投稿形式
-${slideCount}枚のスライド（カルーセル）投稿。構成：${structure.map(s=>s.role).join("→")}
-※キャプションはこの${slideCount}枚を通して読む前提で書くこと（1枚目でスワイプを促す一文を意識すること）
+${totalCount}枚のスライド（カルーセル）投稿。構成：${structure.map(s=>s.role).join("→")}
+※キャプションはこの${totalCount}枚を通して読む前提で書くこと（1枚目でスワイプを促す一文を意識すること）
 
 ■ 商品データ（この内容を事実の唯一の根拠とすること）
 ${prod.body}
@@ -258,7 +264,7 @@ ${points}
 ■ キャプションのルール
 - 文体は「です・ます」調の専門的かつ親しみやすいトーン
 - 本文は150〜250字以内
-- 冒頭1文は${isCompany?"対象の悩み・興味を引くフック":"施術者の「患者さんに何を提案できるか」という視点のフック"}にすること${slideCount>1?"（スライドをスワイプしたくなる引きを意識すること）":""}
+- 冒頭1文は${isCompany?"対象の悩み・興味を引くフック":"施術者の「患者さんに何を提案できるか」という視点のフック"}にすること${totalCount>1?"（スライドをスワイプしたくなる引きを意識すること）":""}
 - 伝えるベネフィット・特徴は3点以内に絞ること
 - SEOキーワード（SPIRAL TURN／オーダーメイドインソール等、商品データ内のキーワード群から自然に）を本文に含めること${!isCompany?"\n- 取扱店向けの場合、「在庫リスクなし・ノルマなし」等の導入ハードルの低さを1点は含めること":""}
 - ハッシュタグは末尾に5〜8個（ブランド名・商品カテゴリ・悩みキーワードをバランスよく）
