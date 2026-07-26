@@ -80,7 +80,7 @@ function taskRowHTML(t){
   const overdue=(!t.done && t.date<todayStr());
   const hub=HUB_MASCOT[t.type]||HUB_MASCOT.other;
   const options=Object.keys(HUB_MASCOT).map(k=>`<option value="${k}" ${k===t.type?"selected":""}>${HUB_MASCOT[k].label}</option>`).join("");
-  return `<div class="task-row ${t.done?"done":""}" data-id="${t.id}">
+  return `<div class="task-row ${t.done?"done":""}" data-id="${t.id}" draggable="true" title="ドラッグで日付変更">
     <canvas class="t-mascot" width="26" height="26"></canvas>
     <select class="t-hub-select" data-id="${t.id}" style="color:${hub.color}">${options}</select>
     <span class="t-title ${overdue?"overdue":""}">${esc(t.title)}</span>
@@ -126,7 +126,7 @@ function renderWeek(){
     const ymd=fmtYMD(d);
     const isToday=ymd===today;
     const dayTasks=tasks.filter(t=>t.date===ymd).sort((a,b)=>a.done-b.done);
-    html+=`<div class="day-col ${isToday?"today":""}">
+    html+=`<div class="day-col ${isToday?"today":""}" data-date="${ymd}">
       <div class="day-head"><span>${d.getMonth()+1}/${d.getDate()}（${WEEKDAY_LABEL[d.getDay()]}）</span>${isToday?"<span>今日</span>":""}</div>
       <div class="day-tasks">${dayTasks.length?dayTasks.map(taskRowHTML).join(""):'<p class="empty-day">予定なし</p>'}</div>
     </div>`;
@@ -202,10 +202,10 @@ function renderMonth(){
     let chips="";
     dayTasks.forEach(t=>{
       const hub=HUB_MASCOT[t.type]||HUB_MASCOT.other;
-      chips+=`<div class="cal-chip ${t.done?"done":""}" data-id="${t.id}" title="${esc(t.title)}"><span class="dot" style="background:${hub.color}"></span><span class="check-mark">${t.done?"✓":""}</span>${esc(t.title)}</div>`;
+      chips+=`<div class="cal-chip ${t.done?"done":""}" data-id="${t.id}" draggable="true" title="${esc(t.title)}（ドラッグで日付変更）"><span class="dot" style="background:${hub.color}"></span><span class="check-mark">${t.done?"✓":""}</span><span class="chip-txt">${esc(t.title)}</span><button class="chip-del" data-id="${t.id}" aria-label="削除">✕</button></div>`;
     });
 
-    html+=`<div class="cal-cell ${inMonth?"":"other-month"} ${isToday?"today":""}">
+    html+=`<div class="cal-cell ${inMonth?"":"other-month"} ${isToday?"today":""}" data-date="${ymd}">
       <div class="cal-cell-head"><span class="cal-daynum">${cursor.getDate()}</span><button class="cal-add-btn" data-date="${ymd}" aria-label="この日にタスクを追加">＋</button></div>
       <div class="cal-tasks">${chips}</div>
     </div>`;
@@ -227,12 +227,21 @@ function render(){
     $("#ceo-title").focus();
     $("#ceo-title").scrollIntoView({behavior:"smooth",block:"center"});
   }));
-  /* カレンダー：タスクのチップをクリックで完了トグル */
-  area.querySelectorAll(".cal-chip[data-id]").forEach(chip=>chip.addEventListener("click",()=>{
+  /* カレンダー：タスクのチップをクリックで完了トグル（削除ボタン自体のクリックは除外） */
+  area.querySelectorAll(".cal-chip[data-id]").forEach(chip=>chip.addEventListener("click",(e)=>{
+    if(e.target.closest(".chip-del"))return;
     const id=chip.dataset.id;
     const t=tasks.find(x=>x.id===id);
     if(!t)return;
     t.done=!t.done;
+    saveTasks(tasks);
+    render();
+  }));
+  /* カレンダー：チップの削除ボタン */
+  area.querySelectorAll(".chip-del").forEach(b=>b.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    const id=b.dataset.id;
+    tasks=tasks.filter(x=>x.id!==id);
     saveTasks(tasks);
     render();
   }));
@@ -271,6 +280,41 @@ function render(){
     saveTasks(tasks);
     render();
   }));
+
+  /* ================= ドラッグ＆ドロップで日付変更 ================= */
+  let draggingId=null;
+  area.querySelectorAll("[draggable='true']").forEach(el=>{
+    el.addEventListener("dragstart",()=>{
+      draggingId=el.dataset.id;
+      el.classList.add("dragging");
+    });
+    el.addEventListener("dragend",()=>{
+      el.classList.remove("dragging");
+      draggingId=null;
+    });
+  });
+  area.querySelectorAll("[data-date]").forEach(dropZone=>{
+    if(!dropZone.classList.contains("cal-cell")&&!dropZone.classList.contains("day-col"))return;
+    dropZone.addEventListener("dragover",(e)=>{
+      e.preventDefault();
+      dropZone.classList.add("drop-hover");
+    });
+    dropZone.addEventListener("dragleave",()=>{
+      dropZone.classList.remove("drop-hover");
+    });
+    dropZone.addEventListener("drop",(e)=>{
+      e.preventDefault();
+      dropZone.classList.remove("drop-hover");
+      if(!draggingId)return;
+      const t=tasks.find(x=>x.id===draggingId);
+      if(!t)return;
+      const newDate=dropZone.dataset.date;
+      if(t.date===newDate)return;
+      t.date=newDate;
+      saveTasks(tasks);
+      render();
+    });
+  });
 }
 
 window.renderCeoTasks=render;
