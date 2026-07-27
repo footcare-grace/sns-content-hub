@@ -179,6 +179,14 @@ td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
       <p class="hint">ChatGPTは1回の指示で1枚しか生成できないため、枚数分のプロンプトを1枚ずつ順番に出力します。同じ指示を毎回貼り直せば、統一感のあるシリーズになります</p>
     </div>
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px"><input type="checkbox" id="ps-hookthumb" checked style="width:auto"> 先頭に「サムネイル（強いフック）」を追加する（1枚目：サムネイル→2枚目：問題提起→…の順になります）</label>
+    <div class="field" id="ps-hooktone-field">
+      <label>フックのトーン</label>
+      <select id="ps-hooktone">
+        <option value="nega" selected>ネガ・問題提起型（例：「SWAYが生じる」悩みを言い当てる）</option>
+        <option value="posi">ポジ・宣言スローガン型（例：「SWAY撲滅」力強く言い切る）</option>
+      </select>
+      <p class="hint">写真の雰囲気も、選んだトーンに自動で合わせて指示されます</p>
+    </div>
     <button class="btn primary" id="btn-gen-post">画像プロンプト＋キャプションを生成</button>
   </div>
   <div class="outbox">
