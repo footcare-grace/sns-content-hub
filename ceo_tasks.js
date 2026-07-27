@@ -284,9 +284,11 @@ function render(){
   /* ================= ドラッグ＆ドロップで日付変更 ================= */
   let draggingId=null;
   area.querySelectorAll("[draggable='true']").forEach(el=>{
-    el.addEventListener("dragstart",()=>{
+    el.addEventListener("dragstart",(e)=>{
       draggingId=el.dataset.id;
       el.classList.add("dragging");
+      e.dataTransfer.effectAllowed="move";
+      e.dataTransfer.setData("text/plain",el.dataset.id);
     });
     el.addEventListener("dragend",()=>{
       el.classList.remove("dragging");
@@ -305,8 +307,9 @@ function render(){
     dropZone.addEventListener("drop",(e)=>{
       e.preventDefault();
       dropZone.classList.remove("drop-hover");
-      if(!draggingId)return;
-      const t=tasks.find(x=>x.id===draggingId);
+      const id=draggingId||e.dataTransfer.getData("text/plain");
+      if(!id)return;
+      const t=tasks.find(x=>x.id===id);
       if(!t)return;
       const newDate=dropZone.dataset.date;
       if(t.date===newDate)return;

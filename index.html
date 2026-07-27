@@ -103,12 +103,12 @@ iframe{width:100%;height:82vh;border:none;display:block;background:#fff}
 .cal-add-btn{width:17px;height:17px;border-radius:50%;border:1.3px solid var(--line);background:#fff;color:var(--sub);font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .cal-add-btn:hover{border-color:var(--tab6);color:var(--tab6)}
 .cal-tasks{display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1;min-height:0}
-.cal-chip{display:flex;align-items:center;gap:3px;font-size:9.5px;padding:1.5px 4px;border-radius:5px;background:#f4f1e4;cursor:grab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.cal-chip{display:flex;align-items:center;gap:3px;font-size:9.5px;padding:1.5px 4px;border-radius:5px;background:#f4f1e4;cursor:grab;position:relative}
 .cal-chip.done{opacity:.5;text-decoration:line-through}
 .cal-chip .dot{width:6px;height:6px;border-radius:50%;flex:none}
 .cal-chip .check-mark{flex:none;font-size:9px}
-.cal-chip .chip-txt{overflow:hidden;text-overflow:ellipsis;min-width:0}
-.cal-chip .chip-del{flex:none;margin-left:auto;opacity:0;color:var(--danger,#c0553c);font-weight:700;padding:0 2px;font-size:10px}
+.cal-chip .chip-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-chip .chip-del{flex:none;opacity:0;color:var(--danger,#c0553c);font-weight:700;padding:0 2px;font-size:10px;background:none;border:none;cursor:pointer}
 .cal-chip:hover .chip-del{opacity:.7}
 .cal-chip .chip-del:hover{opacity:1}
 .cal-chip.dragging{opacity:.35}
