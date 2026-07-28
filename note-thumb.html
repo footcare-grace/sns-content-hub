@@ -73,11 +73,32 @@ pre.empty{color:var(--sub)}
   </div>
 
   <div class="card">
+    <h3>デザインオプション</h3>
+    <div class="field">
+      <label>背景トーン</label>
+      <select id="bg-tone">
+        <option value="light" selected>薄グレー（清潔感・柔らかい印象）</option>
+        <option value="dark">濃紺（専門性・引き締まった印象）</option>
+      </select>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer">
+      <input type="checkbox" id="chain-toggle" style="width:auto">
+      右側に「因果連鎖図」を自動表示する（イラストの代わり・AI不使用で安定表示）
+    </label>
+    <p class="hint">悩みの原因から症状までの流れを、箱＋矢印の図解で自動生成します。テーマを選ぶと内容も自動で決まります。</p>
+  </div>
+
+  <div class="card">
     <h3>② 文言を選ぶ・整える</h3>
     <div class="field">
       <label>メインタイトル（候補をクリック or 直接編集）</label>
       <div class="cands" id="main-cands"></div>
       <input id="main-title" placeholder="メインタイトル">
+    </div>
+    <div class="field">
+      <label>具体的な数字・統計（任意・AI画像プロンプトの帯に使われます）</label>
+      <input id="thumb-stat" placeholder="例：2,530万人の／1日5,000回の">
+      <p class="hint">記事内に登場する具体的な数字があれば入力してください。空欄でも生成できます</p>
     </div>
     <div class="field">
       <label>サブタイトル</label>

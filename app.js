@@ -482,16 +482,50 @@ $("#mk-mode").addEventListener("click",e=>{
   $("#mk-note-fields").style.display=mkMode==="note"?"block":"none";
   $("#mk-th-fields").style.display=mkMode==="therapist"?"block":"none";
 });
+$("#mk-note-what").addEventListener("change",()=>{
+  $("#mk-article-field").style.display=$("#mk-note-what").value.includes("Threadsからの誘導投稿")?"block":"none";
+});
 $("#btn-gen-marketing").addEventListener("click",()=>{
   let p="";
   if(mkMode==="note"){
     const theme=$("#mk-theme").value.trim();
-    if(!theme){alert("Note記事のテーマを入力してください");return;}
     const target=$("#mk-target").value;
     const price=$("#mk-price").value;
     const what=$("#mk-note-what").value;
     const isTherapist=target.includes("セラピスト");
-    p=`あなたはNote販売のセールスライティングのプロです。以下の条件で「${what}」を設計してください。
+    const articleText=$("#mk-article-text").value.trim();
+    const isThreadsHook=what.includes("Threadsからの誘導投稿");
+
+    if(isThreadsHook&&articleText){
+      /* 完成済み記事の本文から、実際の内容に基づく複数の誘導投稿を生成 */
+      p=`あなたはNote記事の集客に強いThreadsコピーライターです。以下は、すでに公開済みのNote記事の本文です。この実際の内容から、Threadsで使う誘導投稿を作成してください。
+
+${axisBlock()}
+
+■ Note記事の情報
+- 価格：${price}
+- 対象読者：${target}${isTherapist?"（現場で使える具体性を重視）":"（悩みを抱える本人に語りかける文体）"}
+${theme?`- テーマ補足：${theme}`:""}
+
+■ 公開済み記事の本文
+${articleText}
+
+■ 作成ルール（最重要）
+- 上記の本文を実際に読み、記事内に登場する具体的なエピソード・数字・言い回し・章立てから、3つの異なる切り口の投稿を作ること
+- 抽象的な要約ではなく、記事に実際に書かれている「印象的な一文・具体的なエピソード・数字」をそのまま核にすること
+- 3つは、それぞれ違う章・違う角度から作ること（例：①メカニズムの意外性を切り口にした投稿　②具体的なエピソード・体験談を切り口にした投稿　③既存の対処法への疑問を切り口にした投稿）
+- 各投稿は、本文だけで価値が伝わる要約を含めること（リンク先を見なくても学びがある状態）
+- 記事の核心の一歩手前まで見せて、「詳しくはNoteにまとめました」と自然につなぐこと
+- 500字以内・ハッシュタグなし
+- 末尾に軽い問いかけを入れてリプライを誘発すること
+
+${YAKKIHO_RULES}
+
+【出力形式】
+3パターンの投稿を、それぞれ「①どの部分を切り口にしたか」を一言添えた上で出力してください。`;
+    }else{
+      if(!theme){alert("Note記事のテーマを入力するか、完成済み記事の本文を貼り付けてください");return;}
+      p=`あなたはNote販売のセールスライティングのプロです。以下の条件で「${what}」を設計してください。
 
 ${axisBlock()}
 
@@ -510,6 +544,7 @@ ${YAKKIHO_RULES}
 
 【出力形式】
 提案は複数案（2〜3案）出し、それぞれの狙いを一言添えてください。`;
+    }
   }else{
     const what=$("#mk-th-what").value;
     const ctx=$("#mk-th-context").value.trim();
