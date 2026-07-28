@@ -258,18 +258,19 @@ td select{padding:4px 6px;font-size:12px;width:auto}
 
 <!-- ============ 秘書担当 ============ -->
 <section class="pane" id="pane-secretary" style="--rc:var(--r-secretary)">
-  <div class="pane-head"><canvas id="hd-secretary" width="112" height="112"></canvas><div><h2>秘書担当</h2><p>記事の進行状況と売上をここで管理します。AIは使わず、このブラウザに保存されます。</p></div></div>
+  <div class="pane-head"><canvas id="hd-secretary" width="112" height="112"></canvas><div><h2>秘書担当</h2><p>記事の進行状況をここで管理します。AIは使わず、このブラウザに保存されます。</p></div></div>
   <div class="card">
     <h3>記事を登録</h3>
     <div class="grid2">
       <div class="field"><label>記事タイトル（仮でOK）</label><input id="ar-title" placeholder="例：足底筋膜炎の昼夜ケア"></div>
       <div class="field"><label>対象・価格</label><input id="ar-meta" placeholder="例：セラピスト向け・1,980円"></div>
     </div>
+    <div class="field"><label>公開済みNoteのURL（任意・完成したら入力）</label><input id="ar-url" type="url" placeholder="https://note.com/..."></div>
     <div class="btnrow" style="margin-bottom:14px">
       <button class="btn primary small" id="btn-add-article">記事を追加</button>
     </div>
     <table id="article-table">
-      <thead><tr><th>タイトル</th><th>対象・価格</th><th>ステータス</th><th>売上メモ</th><th></th></tr></thead>
+      <thead><tr><th>タイトル</th><th>対象・価格</th><th>ステータス</th><th>URL</th><th></th></tr></thead>
       <tbody></tbody>
     </table>
   </div>

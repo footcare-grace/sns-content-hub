@@ -338,9 +338,9 @@ function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt
 $("#btn-add-article").addEventListener("click",()=>{
   const t=$("#ar-title").value.trim();
   if(!t){alert("記事タイトルを入力してください");return;}
-  articles.push({title:t,meta:$("#ar-meta").value.trim(),status:"構成中",sales:""});
+  articles.push({title:t,meta:$("#ar-meta").value.trim(),status:"構成中",url:$("#ar-url").value.trim()});
   saveArticles();
-  $("#ar-title").value="";$("#ar-meta").value="";
+  $("#ar-title").value="";$("#ar-meta").value="";$("#ar-url").value="";
   renderArticles();
 });
 function renderArticles(){
@@ -349,17 +349,20 @@ function renderArticles(){
   articles.forEach((a,i)=>{
     const tr=document.createElement("tr");
     const stCls="s"+AR_ST.indexOf(a.status);
+    const urlCell=a.url
+      ?`<a href="${esc(a.url)}" target="_blank" rel="noopener" style="font-size:11.5px">記事を開く ↗</a>`
+      :`<input data-i="${i}" data-k="url" placeholder="https://note.com/..." style="padding:4px 6px;font-size:12px">`;
     tr.innerHTML=`<td>${esc(a.title)}</td><td>${esc(a.meta)||"—"}</td>
       <td><select data-i="${i}">${AR_ST.map(s=>`<option ${s===a.status?"selected":""}>${s}</option>`).join("")}</select> <span class="pill ${stCls}">${esc(a.status)}</span></td>
-      <td><input data-i="${i}" data-k="sales" value="${esc(a.sales)}" placeholder="例：5部・9,900円" style="padding:4px 6px;font-size:12px"></td>
+      <td>${urlCell}</td>
       <td><button class="del-x" data-i="${i}" aria-label="削除">✕</button></td>`;
     tb.appendChild(tr);
   });
   tb.querySelectorAll("select").forEach(el=>el.addEventListener("change",()=>{
     articles[Number(el.dataset.i)].status=el.value;saveArticles();renderArticles();
   }));
-  tb.querySelectorAll("input[data-k='sales']").forEach(el=>el.addEventListener("change",()=>{
-    articles[Number(el.dataset.i)].sales=el.value;saveArticles();
+  tb.querySelectorAll("input[data-k='url']").forEach(el=>el.addEventListener("change",()=>{
+    articles[Number(el.dataset.i)].url=el.value.trim();saveArticles();renderArticles();
   }));
   tb.querySelectorAll(".del-x").forEach(b=>b.addEventListener("click",()=>{
     const i=Number(b.dataset.i);
