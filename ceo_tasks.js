@@ -150,12 +150,17 @@ function monthLabel(ym){
   const [y,m]=ym.split("-").map(Number);
   return `${y}年${m}月`;
 }
-
-function renderMonthStats(){
+function ensureSelectedMonth(){
+  // statsSelectedMonthが未設定・不正なら、データがある最新の月に確定させる
   const months=availableMonths();
   if(!statsSelectedMonth||!months.includes(statsSelectedMonth)){
-    statsSelectedMonth=months[0]; // 未選択なら、データがある最新の月
+    statsSelectedMonth=months[0];
   }
+  return months;
+}
+
+function renderMonthStats(){
+  const months=ensureSelectedMonth();
   const [sy,sm]=statsSelectedMonth.split("-").map(Number);
   const monthTasks=tasks.filter(t=>{
     const td=new Date(t.date+"T00:00:00");
@@ -200,8 +205,11 @@ function renderMonthStats(){
 
 /* ================= 月間ビュー ================= */
 function renderMonth(){
-  const now=new Date();
-  const y=now.getFullYear(),m=now.getMonth();
+  /* 実績の月選択（statsSelectedMonth）を、カレンダー本体の表示月としても使う */
+  ensureSelectedMonth();
+  const [y,m0]=statsSelectedMonth.split("-").map(Number);
+  const m=m0-1; // JSのDateは月が0始まりのため調整
+
   const monthTasks=tasks.filter(t=>{
     const td=new Date(t.date+"T00:00:00");
     return td.getFullYear()===y&&td.getMonth()===m;
@@ -250,19 +258,12 @@ function render(){
   area.innerHTML=currentView==="week"?renderWeek():renderMonth();
   paintMascots(area);
 
-  /* 実績サマリー：月を切り替えたら、その月の集計だけ再描画（カレンダー本体はそのまま） */
+  /* 実績サマリー：月を切り替えたら、カレンダー本体も含めて丸ごと再描画する */
   const monthSelect=$("#stats-month-select");
   if(monthSelect){
     monthSelect.addEventListener("change",()=>{
       statsSelectedMonth=monthSelect.value;
-      const statsCard=area.querySelector(".stats-card");
-      if(statsCard){
-        statsCard.outerHTML=renderMonthStats();
-        paintMascots(area);
-        // 再描画後のselectにも、同じイベントを再度バインド
-        const newSelect=$("#stats-month-select");
-        if(newSelect)newSelect.addEventListener("change",()=>render());
-      }
+      render();
     });
   }
 
