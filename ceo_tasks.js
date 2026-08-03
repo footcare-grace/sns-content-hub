@@ -136,8 +136,32 @@ function renderWeek(){
 }
 
 /* ================= 月間ビュー ================= */
-/* ================= 今月の実績サマリー ================= */
-function renderMonthStats(monthTasks){
+/* ================= 実績サマリー（月選択式） ================= */
+let statsSelectedMonth=null; // "YYYY-MM" 形式。nullなら初期化時に自動設定
+
+function availableMonths(){
+  // 入力済みタスクがある年月を、新しい順に重複なく列挙
+  const set=new Set(tasks.map(t=>t.date.slice(0,7)));
+  const thisMonth=todayStr().slice(0,7);
+  set.add(thisMonth); // データが無くても「今月」は必ず選べるようにする
+  return [...set].sort((a,b)=>b.localeCompare(a));
+}
+function monthLabel(ym){
+  const [y,m]=ym.split("-").map(Number);
+  return `${y}年${m}月`;
+}
+
+function renderMonthStats(){
+  const months=availableMonths();
+  if(!statsSelectedMonth||!months.includes(statsSelectedMonth)){
+    statsSelectedMonth=months[0]; // 未選択なら、データがある最新の月
+  }
+  const [sy,sm]=statsSelectedMonth.split("-").map(Number);
+  const monthTasks=tasks.filter(t=>{
+    const td=new Date(t.date+"T00:00:00");
+    return td.getFullYear()===sy&&(td.getMonth()+1)===sm;
+  });
+
   const done=monthTasks.filter(t=>t.done);
   const totalCount=done.length;
   const byHub={};
@@ -158,12 +182,17 @@ function renderMonthStats(monthTasks){
       <span class="s-count">${count}件</span>
     </div>`;
   });
-  if(!rows)rows=`<p class="stats-empty">まだ実行済みのタスクがありません。達成したらここに積み上がっていきます。</p>`;
+  if(!rows)rows=`<p class="stats-empty">この月に実行済みのタスクがありません。</p>`;
+
+  const options=months.map(ym=>`<option value="${ym}" ${ym===statsSelectedMonth?"selected":""}>${monthLabel(ym)}</option>`).join("");
 
   return `<div class="stats-card">
     <div class="stats-head">
-      <h4>📊 今月の実績</h4>
-      <span class="stats-total"><b>${totalCount}</b>件 完了</span>
+      <h4>📊 実績</h4>
+      <div class="stats-head-right">
+        <select id="stats-month-select">${options}</select>
+        <span class="stats-total"><b>${totalCount}</b>件 完了</span>
+      </div>
     </div>
     <div class="stats-bars">${rows}</div>
   </div>`;
@@ -178,7 +207,7 @@ function renderMonth(){
     return td.getFullYear()===y&&td.getMonth()===m;
   });
 
-  const statsHTML=renderMonthStats(monthTasks);
+  const statsHTML=renderMonthStats();
   const today=todayStr();
 
   /* カレンダーの表示範囲を計算（月曜始まり、前後の月の日もマス目埋めのため表示） */
@@ -220,6 +249,22 @@ function render(){
   const area=$("#ceo-view-area");
   area.innerHTML=currentView==="week"?renderWeek():renderMonth();
   paintMascots(area);
+
+  /* 実績サマリー：月を切り替えたら、その月の集計だけ再描画（カレンダー本体はそのまま） */
+  const monthSelect=$("#stats-month-select");
+  if(monthSelect){
+    monthSelect.addEventListener("change",()=>{
+      statsSelectedMonth=monthSelect.value;
+      const statsCard=area.querySelector(".stats-card");
+      if(statsCard){
+        statsCard.outerHTML=renderMonthStats();
+        paintMascots(area);
+        // 再描画後のselectにも、同じイベントを再度バインド
+        const newSelect=$("#stats-month-select");
+        if(newSelect)newSelect.addEventListener("change",()=>render());
+      }
+    });
+  }
 
   /* カレンダー：＋ボタンで日付をセットして入力欄にフォーカス */
   area.querySelectorAll(".cal-add-btn").forEach(b=>b.addEventListener("click",()=>{
