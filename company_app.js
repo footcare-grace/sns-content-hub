@@ -127,15 +127,14 @@ $("#btn-gen-post").addEventListener("click",()=>{
   /* フックのトーン（ネガ・問題提起／ポジ・宣言スローガン） */
   const hookTone=$("#ps-hooktone")?.value||"nega";
 
-  /* 商品データから技術情報を自動抽出（商品を見せるスライドのラベル精度を上げる） */
-  const techLines=[];
-  const techMatch=prod.body.match(/独自技術[：:]\s*(.+)/);
-  if(techMatch)techLines.push(`独自技術：${techMatch[1].trim()}`);
-  const expMatch=prod.body.match(/実験結果[：:]\s*(.+)/);
-  if(expMatch)techLines.push(`実験結果：${expMatch[1].trim()}`);
-  const roleMatch=prod.body.match(/(?:①②③|の役割)[：:]\s*(.+)/);
-  if(roleMatch)techLines.push(roleMatch[1].trim());
-  const techDetail=techLines.join("\n");
+  /* 商品データから技術情報を自動抽出（商品を見せるスライドのラベル精度を上げる）
+     特定ラベル名に依存せず、「訴求」「解決する悩み」以外の行は
+     すべて拾う方式にする（商品ごとにラベルの書き方が違うため） */
+  const bodyLines=prod.body.split("\n").map(l=>l.replace(/^-\s*/,"").trim()).filter(Boolean);
+  const excludePrefixes=["###","訴求","解決する悩み"];
+  const techDetail=bodyLines
+    .filter(line=>!excludePrefixes.some(p=>line.startsWith(p)))
+    .join("\n");
 
   /* サムネイルを先頭に追加する場合、構成配列そのものの先頭に差し込む（通し番号にするため） */
   const structure=addThumb&&painList
