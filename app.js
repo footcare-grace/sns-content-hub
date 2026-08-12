@@ -373,6 +373,56 @@ function getPersonaBlock(){
   欲しい未来：${p.therapist.future}`;
 }
 
+/* ================= 型ライブラリ（週次リサーチ由来） ================= */
+const edTypeSelected=new Set();
+function typeBlockText(t){
+  return `【${t.name}】\n${t.summary}\n例：${t.example}\n向いている層：${t.fit}`;
+}
+function rebuildEdBuzzFromTypes(){
+  const blocks=[...edTypeSelected].map(id=>{
+    const t=RESEARCH_TYPES.find(x=>x.id===id);
+    return t?typeBlockText(t):null;
+  }).filter(Boolean);
+  const manual=$("#ed-buzz").dataset.manual||"";
+  $("#ed-buzz").value=[...blocks, manual].filter(Boolean).join("\n---\n");
+}
+function buildTypeChips(){
+  const wrap=$("#ed-type-chips");
+  if(!wrap||typeof RESEARCH_TYPES==="undefined")return;
+  RESEARCH_TYPES.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="chip";b.type="button";b.textContent=t.name.replace(/^型\d：/,"");
+    b.title=t.summary;
+    b.addEventListener("click",()=>{
+      b.classList.toggle("on");
+      b.classList.contains("on")?edTypeSelected.add(t.id):edTypeSelected.delete(t.id);
+      rebuildEdBuzzFromTypes();
+    });
+    wrap.appendChild(b);
+  });
+  if(typeof RESEARCH_SOURCE!=="undefined"&&RESEARCH_SOURCE.updated){
+    const info=$("#ed-type-info");
+    if(info)info.textContent=`${RESEARCH_SOURCE.reportPath}（${RESEARCH_SOURCE.updated}更新）から抽出。クリックすると下の欄に説明と実例が追記されます（複数選択可）`;
+  }
+}
+// 手動でed-buzzを直接編集した内容も保持（チップ選択と共存させるため）
+document.addEventListener("DOMContentLoaded",()=>{
+  const el=$("#ed-buzz");
+  if(!el)return;
+  el.addEventListener("input",()=>{
+    // チップ由来のブロックを除いた「手入力部分」を推定して保持
+    const chipBlocks=[...edTypeSelected].map(id=>{
+      const t=RESEARCH_TYPES.find(x=>x.id===id);
+      return t?typeBlockText(t):null;
+    }).filter(Boolean).join("\n---\n");
+    let manual=el.value;
+    if(chipBlocks && manual.startsWith(chipBlocks)){
+      manual=manual.slice(chipBlocks.length).replace(/^\n---\n/,"");
+    }
+    el.dataset.manual=manual;
+  });
+});
+
 /* ================= 編集担当 ================= */
 function updateEditToggles(){
   const isSell=$("#ed-stage").value.includes("売り込み");
@@ -927,6 +977,7 @@ $$(".copy-btn").forEach(b=>b.addEventListener("click",async()=>{
 load();
 loadApi();
 buildKbSelect();
+buildTypeChips();
 fillAxisForm();
 fillLearningsForm();
 renderAxisBanners();

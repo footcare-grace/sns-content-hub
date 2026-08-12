@@ -320,7 +320,12 @@ td select{padding:4px 6px;font-size:12px;width:auto}
       <textarea id="ed-knowledge" rows="5" placeholder="・外反母趾の人は靴の中で指が使えていない&#10;・実は靴のサイズより「かかとの固定」が重要&#10;・セミナーで話した◯◯の事例"></textarea>
     </div>
     <div class="field">
-      <label>バズ投稿の型を参考にする（任意・「---」区切りで2〜3件）</label>
+      <label>型ライブラリから選ぶ（週次リサーチ由来・クリックで下の欄に自動入力）</label>
+      <div class="chips" id="ed-type-chips"></div>
+      <p class="hint" id="ed-type-info">note・Threadsの週次リサーチから抽出した「型」です。クリックすると下の欄に説明と実例が追記されます（複数選択可）</p>
+    </div>
+    <div class="field">
+      <label>バズ投稿の型を参考にする（任意・「---」区切りで2〜3件。上のチップでも自動入力されます）</label>
       <textarea id="ed-buzz" rows="4" placeholder="貼り付けると「構成・フックの型のみ参考、内容は自分の知識から」という制約付きで組み込まれます"></textarea>
     </div>
     <label class="checkline"><input type="checkbox" id="ed-ref"> knowledgeの文字起こし・PDFを添付して使う（Claudeに貼るとき一緒にドラッグ＆ドロップ）</label>
@@ -509,6 +514,7 @@ td select{padding:4px 6px;font-size:12px;width:auto}
   drawMascot("hd-secretary","typing","#8a8676");
 </script>
 <script src="knowledge_data.js"></script>
+<script src="research_data.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
