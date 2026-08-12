@@ -50,8 +50,8 @@ const DONT_WRITE_LIST=`■ 書かないことリスト（発信範囲・必ず�
 - 特定ブランド・メーカーの製品レビューはしないこと`;
 
 /* ================= 状態 ================= */
-const LS={axis:"hub-axis-v1",tasks:"hub-tasks-v1",leads:"hub-leads-v1",buzz:"hub-buzzstock-v1",learnings:"hub-learnings-v1"};
-let axis=null, tasks=[], leads=[], buzzStock=[], learnings="";
+const LS={axis:"hub-axis-v1",tasks:"hub-tasks-v1",leads:"hub-leads-v1",buzz:"hub-buzzstock-v1",learnings:"hub-learnings-v1",lastTypes:"hub-lasttypes-v1"};
+let axis=null, tasks=[], leads=[], buzzStock=[], learnings="", lastUsedTypes=[];
 
 function load(){
   try{
@@ -60,13 +60,15 @@ function load(){
     leads=JSON.parse(localStorage.getItem(LS.leads))||[];
     buzzStock=JSON.parse(localStorage.getItem(LS.buzz))||[];
     learnings=localStorage.getItem(LS.learnings)||"";
-  }catch(e){axis=null;tasks=[];leads=[];buzzStock=[];learnings="";}
+    lastUsedTypes=JSON.parse(localStorage.getItem(LS.lastTypes))||[];
+  }catch(e){axis=null;tasks=[];leads=[];buzzStock=[];learnings="";lastUsedTypes=[];}
 }
 function saveAxis(){try{localStorage.setItem(LS.axis,JSON.stringify(axis));}catch(e){}}
 function saveTasks(){try{localStorage.setItem(LS.tasks,JSON.stringify(tasks));}catch(e){}}
 function saveLeads(){try{localStorage.setItem(LS.leads,JSON.stringify(leads));}catch(e){}}
 function saveBuzz(){try{localStorage.setItem(LS.buzz,JSON.stringify(buzzStock));}catch(e){}}
 function saveLearnings(){try{localStorage.setItem(LS.learnings,learnings);}catch(e){}}
+function saveLastUsedTypes(){try{localStorage.setItem(LS.lastTypes,JSON.stringify(lastUsedTypes));}catch(e){}}
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
 /* ================= 役割切り替え ================= */
@@ -262,15 +264,17 @@ ${input}
 ■ やってほしいこと
 1. 伸びた投稿の共通点（テーマ・フック・構成・対象読者）を抽出する
 2. 伸びなかった投稿の共通点を抽出する
-3. 「勝ちパターン」を言語化する
-4. 次週の投稿方針を、続けること／やめること／新しく試すことの3つに分けて提案する
+3. 投稿に「型」が記録されている場合、型ごとの傾向（どの型が伸びやすいか／伸びにくいか）を整理する
+4. 「勝ちパターン」を言語化する
+5. 次週の投稿方針を、続けること／やめること／新しく試すことの3つに分けて提案する
+6. 型ごとの傾向を踏まえ、今後どの型を優先的に使うべきか提案する
 
 ■ 制約条件
 - データが少ない場合は断定せず「傾向」として扱うこと
 - 方針はペルソナ比率（${(axis||axisFields()).ratio}）を守ること
 
 【出力形式】
-分析→勝ちパターン→次週方針の順で出力してください。`;
+分析→型別の傾向→勝ちパターン→次週方針の順で出力してください。`;
   }
   $("#out-research").textContent=p;
   $("#out-research").classList.remove("empty");
@@ -434,6 +438,8 @@ function updateEditToggles(){
 $("#ed-stage").addEventListener("change",updateEditToggles);
 $("#ed-target").addEventListener("change",updateEditToggles);
 $("#btn-gen-edit").addEventListener("click",()=>{
+  lastUsedTypes=[...edTypeSelected];
+  saveLastUsedTypes();
   const knowledge=$("#ed-knowledge").value.trim();
   const useRef=$("#ed-ref").checked;
   const kbBlock=getKbBlock();
@@ -875,6 +881,33 @@ $("#btn-fetch-insights").addEventListener("click",async()=>{
   }
 });
 
+/* ================= 実績ログ：使った型チップ ================= */
+const insTypeSelected=new Set();
+function buildInsightTypeChips(){
+  const wrap=$("#ins-type-chips");
+  if(!wrap||typeof RESEARCH_TYPES==="undefined")return;
+  wrap.innerHTML="";
+  insTypeSelected.clear();
+  RESEARCH_TYPES.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="chip";b.type="button";b.textContent=t.name.replace(/^型\d：/,"");
+    b.title=t.summary;
+    if(lastUsedTypes.includes(t.id)){b.classList.add("on");insTypeSelected.add(t.id);}
+    b.addEventListener("click",()=>{
+      b.classList.toggle("on");
+      b.classList.contains("on")?insTypeSelected.add(t.id):insTypeSelected.delete(t.id);
+    });
+    wrap.appendChild(b);
+  });
+}
+function insTypeNames(ids){
+  if(!ids||!ids.length||typeof RESEARCH_TYPES==="undefined")return[];
+  return ids.map(id=>{
+    const t=RESEARCH_TYPES.find(x=>x.id===id);
+    return t?t.name.replace(/^型\d：/,""):id;
+  });
+}
+
 $("#btn-add-insight").addEventListener("click",()=>{
   const summary=$("#ins-summary").value.trim();
   if(!summary){alert("投稿本文・概要を入力してください");return;}
@@ -884,6 +917,7 @@ $("#btn-add-insight").addEventListener("click",()=>{
     date,
     summary,
     target:$("#ins-target").value,
+    types:[...insTypeSelected],
     likes:$("#ins-likes").value||"0",
     saves:$("#ins-saves").value||"0",
     replies:$("#ins-replies").value||"0",
@@ -893,14 +927,16 @@ $("#btn-add-insight").addEventListener("click",()=>{
   saveInsights();renderInsights();
   $("#ins-summary").value="";$("#ins-date").value="";
   $("#ins-likes").value="";$("#ins-saves").value="";$("#ins-replies").value="";$("#ins-views").value="";
+  buildInsightTypeChips();
 });
 
 function renderInsights(){
   const tb=$("#insight-table tbody");tb.innerHTML="";
-  if(!insightLog.length){tb.innerHTML=`<tr><td colspan="9" class="empty-row">実績がまだ記録されていません</td></tr>`;return;}
+  if(!insightLog.length){tb.innerHTML=`<tr><td colspan="10" class="empty-row">実績がまだ記録されていません</td></tr>`;return;}
   insightLog.slice(0,30).forEach((r,i)=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${esc(r.date)}</td><td>${esc(r.summary)}</td><td>${esc(r.target)||"—"}</td><td>${esc(r.likes)}</td><td>${esc(r.saves)||"—"}</td><td>${esc(r.replies)}</td><td>${esc(r.views)||"—"}</td><td>${esc(r.source)}</td>
+    const typeLabel=insTypeNames(r.types).join("・")||"—";
+    tr.innerHTML=`<td>${esc(r.date)}</td><td>${esc(r.summary)}</td><td>${esc(r.target)||"—"}</td><td>${esc(typeLabel)}</td><td>${esc(r.likes)}</td><td>${esc(r.saves)||"—"}</td><td>${esc(r.replies)}</td><td>${esc(r.views)||"—"}</td><td>${esc(r.source)}</td>
       <td><button class="del-x" data-i="${i}" aria-label="削除">✕</button></td>`;
     tb.appendChild(tr);
   });
@@ -912,7 +948,7 @@ function renderInsights(){
 $("#btn-send-insights").addEventListener("click",()=>{
   if(!insightLog.length){alert("投稿実績ログが空です。先に記録を追加してください");return;}
   const combined=insightLog.map(r=>
-    `投稿：${r.summary}（対象：${r.target||"—"}）\nいいね${r.likes}・保存${r.saves||0}・返信${r.replies}・閲覧${r.views||0}・${r.date}`
+    `投稿：${r.summary}（対象：${r.target||"—"}・型：${insTypeNames(r.types).join("・")||"未記録"}）\nいいね${r.likes}・保存${r.saves||0}・返信${r.replies}・閲覧${r.views||0}・${r.date}`
   ).join("\n---\n");
   $$(".role").forEach(x=>x.classList.remove("on"));
   $$(".pane").forEach(x=>x.classList.remove("on"));
@@ -986,3 +1022,4 @@ renderLeads();
 renderBuzz();
 renderApiPanel();
 renderInsights();
+buildInsightTypeChips();
