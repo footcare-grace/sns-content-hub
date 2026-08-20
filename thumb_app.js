@@ -287,6 +287,95 @@ $("#btn-download").addEventListener("click",()=>{
 });
 
 /* ================= AI画像プロンプト生成 ================= */
+/* ================= 記事本文から見出し案を作るプロンプト生成 ================= */
+$("#btn-gen-headline").addEventListener("click",()=>{
+  const articleText=$("#article-text").value.trim();
+  if(!articleText){alert("記事の本文を貼り付けてください");return;}
+  const t=currentTheme?KNOWLEDGE_THEMES.find(x=>x.id===currentTheme):null;
+
+  const p=`あなたはNoteサムネイルのアートディレクターです。以下は、すでに公開済みのNote記事の本文です。この実際の内容から、サムネイル用の見出し案を作成してください。
+
+■ 公開済み記事の本文
+${articleText}
+
+■ 基準デザイン（このサムネイルメーカーの仕様）
+- 濃紺（#1e2a4a）の太字メインタイトル・オレンジ（#e8681a）のサブタイトル・オレンジ角丸バッジ、という構成
+- メインタイトルは2〜3行までの範囲で自動改行される
+- 記事に登場する具体的な数字（統計・件数等）があれば、それも別途教えてください（帯として使います）
+
+■ 作成ルール（最重要）
+- 上記の本文を実際に読み、記事内に登場する具体的な言い回し・エピソード・数字から見出しを作ること
+- 抽象的な要約ではなく、記事に実際に書かれている「印象的な一文・具体的な表現」をそのまま核にすること
+- メインタイトル：一瞬で「え、自分のことだ」と思わせる、核心を突く短いフレーズ
+- サブタイトル：メインタイトルを補足する、やや短めの一文
+- バッジ：「このNoteでわかること」を一言で示す短い文言
+${t?`- このテーマの参考情報：${t.title}`:""}
+
+【出力形式】
+以下の3項目を、それぞれ1行ずつ、そのままコピーできる形で出力してください。
+メインタイトル：（ここに）
+サブタイトル：（ここに）
+バッジ：（ここに）
+統計・数字（あれば）：（ここに、無ければ「なし」）`;
+
+  $("#out-headline").textContent=p;
+  $("#out-headline").classList.remove("empty");
+  $("#headline-prompt-wrap").style.display="block";
+});
+$("#btn-copy-headline").addEventListener("click",async()=>{
+  const out=$("#out-headline");
+  if(!out.textContent.trim()){alert("先にプロンプトを生成してください");return;}
+  try{await navigator.clipboard.writeText(out.textContent);}
+  catch(e){
+    const rg=document.createRange();rg.selectNodeContents(out);
+    const sel=getSelection();sel.removeAllRanges();sel.addRange(rg);
+    document.execCommand("copy");sel.removeAllRanges();
+  }
+  const b=$("#btn-copy-headline");
+  const original=b.textContent;
+  b.textContent="コピーしました ✓";b.classList.add("ok");
+  setTimeout(()=>{b.textContent=original;b.classList.remove("ok");},1800);
+});
+
+/* Claudeの回答（メインタイトル：〜／サブタイトル：〜／バッジ：〜／統計・数字：〜）を
+   パースして、下の3〜4つの入力欄に自動で流し込む */
+$("#btn-apply-headline").addEventListener("click",()=>{
+  const reply=$("#headline-reply").value.trim();
+  if(!reply){alert("Claudeの回答を貼り付けてください");return;}
+
+  const pick=(label)=>{
+    const re=new RegExp(label+"[：:]\\s*(.+)");
+    const m=reply.match(re);
+    return m?m[1].trim():"";
+  };
+
+  const main=pick("メインタイトル");
+  const sub=pick("サブタイトル");
+  const badge=pick("バッジ");
+  let stat=pick("統計・数字")||pick("統計")||pick("数字");
+  if(stat==="なし")stat="";
+
+  let filled=0;
+  if(main){$("#main-title").value=main;filled++;}
+  if(sub){$("#sub-title").value=sub;filled++;}
+  if(badge){$("#badge-text").value=badge;filled++;}
+  if(stat){$("#thumb-stat").value=stat;filled++;}
+
+  if(filled===0){
+    alert("回答から項目を読み取れませんでした。「メインタイトル：」のような形式で書かれているか確認してください。");
+    return;
+  }
+
+  const b=$("#btn-apply-headline");
+  const original=b.textContent;
+  b.textContent=`反映しました（${filled}項目）✓`;
+  b.classList.add("ok");
+  setTimeout(()=>{b.textContent=original;b.classList.remove("ok");},2200);
+
+  // 反映した箇所まで自動スクロール
+  $("#main-title").scrollIntoView({behavior:"smooth",block:"center"});
+});
+
 $("#btn-gen-prompt").addEventListener("click",()=>{
   if(!currentTheme){alert("先にテーマを選んでください");return;}
   const t=KNOWLEDGE_THEMES.find(x=>x.id===currentTheme);
@@ -337,10 +426,10 @@ ${t.title}
 ・オレンジのバッジが背景に埋もれず、最初に目に入るアクセントになっているか
 ・イラストの線が細すぎて縮小時に消えていないか
 
-※下の②③が、実際にGemini/ChatGPTに貼るプロンプトです。この企画メモ自体は貼らないでください。`;
+※下の②が、実際にChatGPTに貼るプロンプトです。この企画メモ自体は貼らないでください。`;
 
-  /* ---- ②Gemini用プロンプト（単体で完結・そのままコピペしてよい） ---- */
-  const geminiPrompt=`アスペクト比16:9、解像度1280×720pxのNote記事サムネイル画像を作成してください。
+  /* ---- ②ChatGPT用プロンプト（テキスト＋イラスト込みで1枚生成・単体で完結） ---- */
+  const chatgptPrompt=`アスペクト比16:9、解像度1280×720pxのNote記事サムネイル画像を作成してください。
 
 ■ レイアウト（数値指定・厳守）
 - 背景：薄いグレー〜青みグレー（#e7ebf1〜#eef1f5のグラデーション）に、間隔76px程度の細い方眼グリッド線（色は背景よりわずかに濃い程度、目立たせない）
@@ -379,39 +468,8 @@ ${stat?`- 統計の帯：メインタイトルの直下に、濃紺（#1e2a4a）
 
 ※期待通りの結果が出ない場合は、上記の「禁止事項」に該当する要素（影・グラデーション・余計な色）が入っていないか確認し、該当箇所だけ再指示してください。`;
 
-  /* ---- ③ChatGPT用プロンプト（単体で完結・そのままコピペしてよい） ---- */
-  const chatgptPrompt=`アスペクト比16:9の横長イラスト素材を作成してください。
-
-■ 背景・配置（数値指定・厳守）
-- 背景は透明、または薄いグレー（#eef1f5）の単色のみ
-- 画像の左側46%は完全に空白（何も配置しない余白）にすること
-- イラストは右側54%の領域内に収め、上下は画像高さの3%ずつ余白を残すこと
-
-■ イラスト仕様（医学書・学術論文の図解のような、正確で権威性のあるスタイルにすること）
-- ${t.title.replace(/テーマ\d+：/,"").replace(/（.+）/,"")}に関連する足・関節部位の医学的な線画イラスト
-- スタイルの参考：整形外科の教科書・理学療法の専門書に載っているような図解。均一な線の太さ、正確な解剖学的比率、装飾のないフラットな2Dベクター画風
-- 線の色は濃紺（#1e2a4a）の単色のみ、太さは全体を通して均一にすること
-- 問題・痛みの発生箇所に、オレンジ色（#e8681a）の光彩・放射状の強調マークを1箇所だけ入れる
-
-■ AI生成特有の不自然さを避けるための指示（重要）
-- 手や指を描く場合、本数・関節の数を解剖学的に正確にすること
-- 左右対称であるべき部位は、正確に対称に描くこと
-- 単一のイラストスタイルで統一すること（部分ごとに画風が変わらないこと）
-
-■ 禁止事項（厳守）
-- 文字・テキスト・数字・ロゴを一切含めないこと
-- ドロップシャドウ（影）を使わないこと
-- 濃紺とオレンジ以外の色を使わないこと（背景の薄グレーは除く）
-- 写真的な質感・3Dレンダインを使わないこと（線画・フラットデザインのみ）
-- グラデーション・ネオン風グローを使わないこと（オレンジの光彩マーク以外）
-- 背景に模様・グリッド線を入れないこと（それはこのツール側で別途重ねるため）
-
-※生成した画像は、このサムネイルメーカーの「③イラストを入れる」からアップロードすると、文字と自動合成できます。`;
-
   $("#out-concept").textContent=conceptText;
   $("#out-concept").classList.remove("empty");
-  $("#out-gemini").textContent=geminiPrompt;
-  $("#out-gemini").classList.remove("empty");
   $("#out-chatgpt").textContent=chatgptPrompt;
   $("#out-chatgpt").classList.remove("empty");
   $("#prompt-wrap").style.display="block";
@@ -434,7 +492,6 @@ function bindCopyBtn(btnId,outId){
   });
 }
 bindCopyBtn("#btn-copy-concept","#out-concept");
-bindCopyBtn("#btn-copy-gemini","#out-gemini");
 bindCopyBtn("#btn-copy-chatgpt","#out-chatgpt");
 
 /* ================= 初期描画 ================= */

@@ -73,6 +73,24 @@ pre.empty{color:var(--sub)}
   </div>
 
   <div class="card">
+    <h3>📝 完成した記事から見出し案を作る（任意）</h3>
+    <p class="hint" style="margin-bottom:10px">公開済みのNote記事の本文を貼ると、その内容から見出し・サブタイトル・バッジの案を作るプロンプトを生成します。Claudeに貼って結果をもらったら、下の②の欄に貼り付けてください。</p>
+    <div class="field">
+      <textarea id="article-text" rows="6" placeholder="公開済みのNote記事の本文をそのまま貼り付け（無料部分だけでOKです）"></textarea>
+    </div>
+    <button class="btn primary" id="btn-gen-headline" style="width:100%">記事から見出し案を作るプロンプトを生成</button>
+    <div class="outbox" id="headline-prompt-wrap" style="display:none;margin-top:14px">
+      <div class="out-head"><h3>Claudeに貼るプロンプト</h3><button class="copy-btn" id="btn-copy-headline">コピー</button></div>
+      <pre id="out-headline" class="empty"></pre>
+      <div class="field" style="margin-top:14px">
+        <label>Claudeの回答を、そのままここに貼り付け</label>
+        <textarea id="headline-reply" rows="4" placeholder="メインタイトル：〜&#10;サブタイトル：〜&#10;バッジ：〜&#10;統計・数字：〜"></textarea>
+      </div>
+      <button class="btn primary" id="btn-apply-headline" style="width:100%">↓ この内容を下の①②③に自動で反映する</button>
+    </div>
+  </div>
+
+  <div class="card">
     <h3>デザインオプション</h3>
     <div class="field">
       <label>背景トーン</label>
@@ -114,7 +132,7 @@ pre.empty{color:var(--sub)}
 
   <div class="card">
     <h3>③ イラストを入れる（任意）</h3>
-    <div class="upload-zone" id="upload-zone">ここをクリックして、Gemini/ChatGPTで生成した画像を選択<br>（右側の余白に自動配置されます）</div>
+    <div class="upload-zone" id="upload-zone">ここをクリックして、ChatGPTで生成した画像を選択<br>（右側の余白に自動配置されます）</div>
     <input type="file" id="img-input" accept="image/*" style="display:none">
     <div class="btnrow">
       <button class="btn small" id="btn-clear-img" style="display:none">イラストを外す</button>
@@ -126,7 +144,7 @@ pre.empty{color:var(--sub)}
     <h3>④ 仕上げ</h3>
     <div class="btnrow">
       <button class="btn primary" id="btn-download">PNGをダウンロード（1280×670）</button>
-      <button class="btn orange" id="btn-gen-prompt">AI画像プロンプトを生成（Gemini/ChatGPT用）</button>
+      <button class="btn orange" id="btn-gen-prompt">AI画像プロンプトを生成（ChatGPT用）</button>
     </div>
   </div>
 </div>
@@ -140,12 +158,9 @@ pre.empty{color:var(--sub)}
   <div class="outbox" id="prompt-wrap" style="display:none">
     <div class="out-head"><h3>①企画メモ（コンセプト・タイトル案・視認性チェック）</h3><button class="copy-btn" id="btn-copy-concept">コピー</button></div>
     <pre id="out-concept" class="empty"></pre>
-    <p class="mode-note">※これはあなたが確認するための資料です。AIに渡すのは下の②③だけにしてください。</p>
+    <p class="mode-note">※これはあなたが確認するための資料です。AIに渡すのは下の②だけにしてください。</p>
 
-    <div class="out-head" style="margin-top:18px"><h3>②Gemini用プロンプト（テキスト込みで1枚生成）</h3><button class="copy-btn" id="btn-copy-gemini">これだけコピー</button></div>
-    <pre id="out-gemini" class="empty"></pre>
-
-    <div class="out-head" style="margin-top:18px"><h3>③ChatGPT用プロンプト（ビジュアルのみ・文字なし）</h3><button class="copy-btn" id="btn-copy-chatgpt">これだけコピー</button></div>
+    <div class="out-head" style="margin-top:18px"><h3>②ChatGPT用プロンプト（テキスト＋イラスト込みで1枚生成）</h3><button class="copy-btn" id="btn-copy-chatgpt">コピー</button></div>
     <pre id="out-chatgpt" class="empty"></pre>
   </div>
 </div>
