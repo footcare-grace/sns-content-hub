@@ -31,10 +31,6 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px}
 .btn.orange{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600}
 .btn.small{padding:5px 11px;font-size:12px}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-.cands{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
-.cand{padding:7px 11px;border:1.5px solid var(--line);border-radius:8px;background:#fff;font-size:12.5px;font-family:inherit;color:var(--ink);cursor:pointer;text-align:left;line-height:1.45}
-.cand:hover{border-color:var(--navy)}
-.cand.on{border-color:var(--navy);background:#eef1f7;font-weight:600}
 .persona-box{font-size:12px;background:#f4f6fa;border-radius:8px;padding:10px 12px;line-height:1.7;color:#33415e;margin-bottom:12px;display:none}
 .persona-box.show{display:block}
 .persona-box b{color:var(--navy)}
@@ -112,8 +108,7 @@ pre.empty{color:var(--sub)}
   <div class="card">
     <h3>② 文言を選ぶ・整える</h3>
     <div class="field">
-      <label>メインタイトル（候補をクリック or 直接編集）</label>
-      <div class="cands" id="main-cands"></div>
+      <label>メインタイトル</label>
       <input id="main-title" placeholder="メインタイトル">
     </div>
     <div class="field">
@@ -123,12 +118,10 @@ pre.empty{color:var(--sub)}
     </div>
     <div class="field">
       <label>サブタイトル</label>
-      <div class="cands" id="sub-cands"></div>
       <input id="sub-title" placeholder="サブタイトル">
     </div>
     <div class="field">
       <label>バッジ（オレンジの帯に入る一言）</label>
-      <div class="cands" id="badge-cands"></div>
       <input id="badge-text" placeholder="バッジ文言">
     </div>
     <div class="field">

@@ -35,7 +35,6 @@ $("#theme-select").addEventListener("change",()=>{
   const id=$("#theme-select").value;
   currentTheme=id||null;
   renderPersona(id);
-  renderCands(id);
   if(id){
     const p=THUMB_PRESETS[id];
     $("#main-title").value=p?p.main[0]:"";
@@ -52,28 +51,6 @@ function renderPersona(id){
   if(!p){box.classList.remove("show");return;}
   box.innerHTML=`<b>想定読者：</b>${p.general.name}<br>${p.general.situation}<br><b>狙う心理：</b>${p.general.future}`;
   box.classList.add("show");
-}
-
-function renderCands(id){
-  const p=id?THUMB_PRESETS[id]:null;
-  const build=(wrapId,items,inputId)=>{
-    const wrap=$(wrapId);wrap.innerHTML="";
-    if(!p)return;
-    items.forEach(txt=>{
-      const b=document.createElement("button");
-      b.className="cand";b.type="button";b.textContent=txt;
-      b.addEventListener("click",()=>{
-        $(inputId).value=txt;
-        wrap.querySelectorAll(".cand").forEach(x=>x.classList.remove("on"));
-        b.classList.add("on");
-        draw();
-      });
-      wrap.appendChild(b);
-    });
-  };
-  build("#main-cands",p?p.main:[],"#main-title");
-  build("#sub-cands",p?p.sub:[],"#sub-title");
-  build("#badge-cands",p?p.badge:[],"#badge-text");
 }
 
 ["main-title","sub-title","badge-text"].forEach(id=>{
