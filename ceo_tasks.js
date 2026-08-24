@@ -253,10 +253,22 @@ function renderMonth(){
 }
 
 /* ================= 全体描画 ================= */
+/* やること欄の入力補助：今までに入力したタスク名を、
+   使用頻度の高い順に候補として表示する（最大30件） */
+function renderTitleHistory(){
+  const counts={};
+  tasks.forEach(t=>{counts[t.title]=(counts[t.title]||0)+1;});
+  const sorted=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,30);
+  const datalist=$("#ceo-title-history");
+  if(!datalist)return;
+  datalist.innerHTML=sorted.map(title=>`<option value="${esc(title)}"></option>`).join("");
+}
+
 function render(){
   const area=$("#ceo-view-area");
   area.innerHTML=currentView==="week"?renderWeek():renderMonth();
   paintMascots(area);
+  renderTitleHistory();
 
   /* 実績サマリー：月を切り替えたら、カレンダー本体も含めて丸ごと再描画する */
   const monthSelect=$("#stats-month-select");
