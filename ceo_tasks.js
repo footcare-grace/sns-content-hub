@@ -21,7 +21,6 @@ function saveTasks(tasks){
   try{localStorage.setItem(LS_KEY,JSON.stringify(tasks));}catch(e){}
 }
 let tasks=loadTasks();
-let currentView="week";
 
 /* ================= 日付ヘルパー ================= */
 function todayStr(){
@@ -38,7 +37,6 @@ function startOfWeek(base){
   d.setDate(d.getDate()+diff);
   return d;
 }
-const WEEKDAY_LABEL=["日","月","火","水","木","金","土"];
 const WEEKDAY_MON_LABEL=["月","火","水","木","金","土","日"];
 
 /* ================= 追加 ================= */
@@ -67,12 +65,19 @@ $("#ceo-title").addEventListener("keydown",e=>{
 /* 日付初期値は今日 */
 $("#ceo-date").value=todayStr();
 
-/* ================= 表示切り替え ================= */
-$("#ceo-view-week").addEventListener("click",()=>{currentView="week";updateToggle();render();});
-$("#ceo-view-month").addEventListener("click",()=>{currentView="month";updateToggle();render();});
-function updateToggle(){
-  $("#ceo-view-week").classList.toggle("on",currentView==="week");
-  $("#ceo-view-month").classList.toggle("on",currentView==="month");
+/* ================= タスクの複製 ================= */
+function duplicateTask(id){
+  const t=tasks.find(x=>x.id===id);
+  if(!t)return;
+  tasks.push({
+    id:Date.now()+Math.random().toString(16).slice(2),
+    title:t.title,
+    date:t.date,
+    type:t.type,
+    done:false /* 複製後は未完了の状態で作る */
+  });
+  saveTasks(tasks);
+  render();
 }
 
 /* ================= タスク行の生成 ================= */
@@ -85,6 +90,7 @@ function taskRowHTML(t){
     <select class="t-hub-select" data-id="${t.id}" style="color:${hub.color}">${options}</select>
     <span class="t-title ${overdue?"overdue":""}">${esc(t.title)}</span>
     <button class="t-check" data-id="${t.id}" aria-label="完了にする">${t.done?"✓":""}<span class="star-pop">★</span></button>
+    <button class="t-dup" data-id="${t.id}" aria-label="複製">⧉</button>
     <button class="t-del" data-id="${t.id}" aria-label="削除">✕</button>
   </div>`;
 }
@@ -116,26 +122,6 @@ function drawMascotCompat(target,type,color){
 }
 window.drawMascot=drawMascotCompat;
 
-/* ================= 週間ビュー ================= */
-function renderWeek(){
-  const monday=startOfWeek(new Date());
-  const days=[...Array(7)].map((_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d;});
-  const today=todayStr();
-  let html=`<div class="week-grid">`;
-  days.forEach(d=>{
-    const ymd=fmtYMD(d);
-    const isToday=ymd===today;
-    const dayTasks=tasks.filter(t=>t.date===ymd).sort((a,b)=>a.done-b.done);
-    html+=`<div class="day-col ${isToday?"today":""}" data-date="${ymd}">
-      <div class="day-head"><span>${d.getMonth()+1}/${d.getDate()}（${WEEKDAY_LABEL[d.getDay()]}）</span>${isToday?"<span>今日</span>":""}</div>
-      <div class="day-tasks">${dayTasks.length?dayTasks.map(taskRowHTML).join(""):'<p class="empty-day">予定なし</p>'}</div>
-    </div>`;
-  });
-  html+=`</div>`;
-  return html;
-}
-
-/* ================= 月間ビュー ================= */
 /* ================= 実績サマリー（月選択式） ================= */
 let statsSelectedMonth=null; // "YYYY-MM" 形式。nullなら初期化時に自動設定
 
@@ -210,11 +196,6 @@ function renderMonth(){
   const [y,m0]=statsSelectedMonth.split("-").map(Number);
   const m=m0-1; // JSのDateは月が0始まりのため調整
 
-  const monthTasks=tasks.filter(t=>{
-    const td=new Date(t.date+"T00:00:00");
-    return td.getFullYear()===y&&td.getMonth()===m;
-  });
-
   const statsHTML=renderMonthStats();
   const today=todayStr();
 
@@ -239,7 +220,7 @@ function renderMonth(){
     let chips="";
     dayTasks.forEach(t=>{
       const hub=HUB_MASCOT[t.type]||HUB_MASCOT.other;
-      chips+=`<div class="cal-chip ${t.done?"done":""}" data-id="${t.id}" draggable="true" title="${esc(t.title)}（ドラッグで日付変更）"><span class="dot" style="background:${hub.color}"></span><span class="check-mark">${t.done?"✓":""}</span><span class="chip-txt">${esc(t.title)}</span><button class="chip-del" data-id="${t.id}" aria-label="削除">✕</button></div>`;
+      chips+=`<div class="cal-chip ${t.done?"done":""}" data-id="${t.id}" draggable="true" title="${esc(t.title)}（ドラッグで日付変更）"><span class="dot" style="background:${hub.color}"></span><span class="check-mark">${t.done?"✓":""}</span><span class="chip-txt">${esc(t.title)}</span><button class="chip-dup" data-id="${t.id}" aria-label="複製">⧉</button><button class="chip-del" data-id="${t.id}" aria-label="削除">✕</button></div>`;
     });
 
     html+=`<div class="cal-cell ${inMonth?"":"other-month"} ${isToday?"today":""}" data-date="${ymd}">
@@ -266,7 +247,7 @@ function renderTitleHistory(){
 
 function render(){
   const area=$("#ceo-view-area");
-  area.innerHTML=currentView==="week"?renderWeek():renderMonth();
+  area.innerHTML=renderMonth();
   paintMascots(area);
   renderTitleHistory();
 
@@ -285,15 +266,20 @@ function render(){
     $("#ceo-title").focus();
     $("#ceo-title").scrollIntoView({behavior:"smooth",block:"center"});
   }));
-  /* カレンダー：タスクのチップをクリックで完了トグル（削除ボタン自体のクリックは除外） */
+  /* カレンダー：タスクのチップをクリックで完了トグル（複製・削除ボタン自体のクリックは除外） */
   area.querySelectorAll(".cal-chip[data-id]").forEach(chip=>chip.addEventListener("click",(e)=>{
-    if(e.target.closest(".chip-del"))return;
+    if(e.target.closest(".chip-del")||e.target.closest(".chip-dup"))return;
     const id=chip.dataset.id;
     const t=tasks.find(x=>x.id===id);
     if(!t)return;
     t.done=!t.done;
     saveTasks(tasks);
     render();
+  }));
+  /* カレンダー：チップの複製ボタン */
+  area.querySelectorAll(".chip-dup").forEach(b=>b.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    duplicateTask(b.dataset.id);
   }));
   /* カレンダー：チップの削除ボタン */
   area.querySelectorAll(".chip-del").forEach(b=>b.addEventListener("click",(e)=>{
@@ -323,6 +309,9 @@ function render(){
     }else{
       render();
     }
+  }));
+  area.querySelectorAll(".t-dup").forEach(b=>b.addEventListener("click",()=>{
+    duplicateTask(b.dataset.id);
   }));
   area.querySelectorAll(".t-del").forEach(b=>b.addEventListener("click",()=>{
     const id=b.dataset.id;
@@ -354,7 +343,7 @@ function render(){
     });
   });
   area.querySelectorAll("[data-date]").forEach(dropZone=>{
-    if(!dropZone.classList.contains("cal-cell")&&!dropZone.classList.contains("day-col"))return;
+    if(!dropZone.classList.contains("cal-cell"))return;
     dropZone.addEventListener("dragover",(e)=>{
       e.preventDefault();
       dropZone.classList.add("drop-hover");
