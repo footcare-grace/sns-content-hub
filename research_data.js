@@ -28,6 +28,11 @@ const RESEARCH_SOURCE_LOG = [
     updated: "2026-08-27",
     reportPath: "weekly-research-public/02_SNS運用トレンド/2026-08-27-threads-trend-research.md",
     adoptedTypeIds: ["attribute_empathy", "myth_reversal"]
+  },
+  {
+    updated: "2026-09-01",
+    reportPath: "weekly-research-public/02_SNS運用トレンド/2026-09-01-threads-trend-research.md",
+    adoptedTypeIds: ["mechanism_bullet"]
   }
 ];
 
@@ -84,7 +89,8 @@ const TYPE_LIBRARY = [
     example: "「立ち仕事のみなさん、夕方になると靴がきつくなりませんか？」「子供の靴、かかとがすり減ってから買い替えてる人いますか？」",
     fit: "一般層（立ち仕事の人・子育て中の親など、タクミの主要客層に直接語りかけられる）",
     firstAdopted: "2026-08-27",
-    status: "active"
+    status: "active",
+    note: "2026-09-01の調査でも継続して有効性を確認（2週連続で最優先度）"
   },
   {
     id: "myth_reversal",
@@ -93,6 +99,15 @@ const TYPE_LIBRARY = [
     example: "「インソールは“痛いところ”に厚みを入れるものだと思っていませんか？実は逆で、痛くない場所の機能を取り戻すためのものです」",
     fit: "一般層・セラピスト層の両方（専門性のアピールと意外性による拡散力を両立できる）",
     firstAdopted: "2026-08-27",
+    status: "active"
+  },
+  {
+    id: "mechanism_bullet",
+    name: "メカニズム箇条書き型",
+    summary: "身体の連動を「〇〇すると→△△になる→□□が高まる」のように矢印でつなぐ箇条書きで、テンポよく提示する。専門性訴求と読みやすさを両立できる",
+    example: "「踵荷重で起きる変化：踵で踏めると大臀筋・ハムストリングが働きやすい→股関節主導の動きになる→骨盤の安定性が高まる」\n転用例：「インソールで起きる変化：接地の順番が変わる→足裏のセンサーが働きやすくなる→歩行が安定する→膝・腰への負担が減る」",
+    fit: "セラピスト層向け（専門性訴求）。knowledge_data.js内の各テーマの「展開順序」ロジックとそのまま組み合わせやすい",
+    firstAdopted: "2026-09-01",
     status: "active"
   }
 ];
