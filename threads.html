@@ -320,12 +320,7 @@ td select{padding:4px 6px;font-size:12px;width:auto}
       <textarea id="ed-knowledge" rows="5" placeholder="・外反母趾の人は靴の中で指が使えていない&#10;・実は靴のサイズより「かかとの固定」が重要&#10;・セミナーで話した◯◯の事例"></textarea>
     </div>
     <div class="field">
-      <label>型ライブラリから選ぶ（週次リサーチ由来・クリックで下の欄に自動入力）</label>
-      <div class="chips" id="ed-type-chips"></div>
-      <p class="hint" id="ed-type-info">note・Threadsの週次リサーチから抽出した「型」です。クリックすると下の欄に説明と実例が追記されます（複数選択可）</p>
-    </div>
-    <div class="field">
-      <label>バズ投稿の型を参考にする（任意・「---」区切りで2〜3件。上のチップでも自動入力されます）</label>
+      <label>バズ投稿の型を参考にする（任意・「---」区切りで2〜3件）</label>
       <textarea id="ed-buzz" rows="4" placeholder="貼り付けると「構成・フックの型のみ参考、内容は自分の知識から」という制約付きで組み込まれます"></textarea>
     </div>
     <label class="checkline"><input type="checkbox" id="ed-ref"> knowledgeの文字起こし・PDFを添付して使う（Claudeに貼るとき一緒にドラッグ＆ドロップ）</label>
@@ -464,10 +459,6 @@ td select{padding:4px 6px;font-size:12px;width:auto}
     <h3>投稿実績ログ（API取得分・手入力分）</h3>
     <p class="hint" style="margin-bottom:10px">数字を埋めるだけでOKです。投稿本文を見れば分かる内容は入力不要です。</p>
     <div class="field"><label>投稿本文・概要</label><input id="ins-summary" placeholder="例：外反母趾×かかと固定の投稿"></div>
-    <div class="field">
-      <label>使った型（任意・複数選択可・直近生成した型が自動で選択されます）</label>
-      <div class="chips" id="ins-type-chips"></div>
-    </div>
     <div class="grid2">
       <div class="field"><label>対象読者</label>
         <select id="ins-target"><option selected>一般向け</option><option>セラピスト向け</option></select></div>
@@ -481,7 +472,7 @@ td select{padding:4px 6px;font-size:12px;width:auto}
     </div>
     <div class="btnrow" style="margin-bottom:12px"><button class="btn small" id="btn-add-insight">この内容で1件追加</button></div>
     <table id="insight-table">
-      <thead><tr><th>日付</th><th>投稿概要</th><th>対象</th><th>使った型</th><th>いいね</th><th>保存</th><th>返信</th><th>閲覧</th><th>取得方法</th><th></th></tr></thead>
+      <thead><tr><th>日付</th><th>投稿概要</th><th>対象</th><th>いいね</th><th>保存</th><th>返信</th><th>閲覧</th><th>取得方法</th><th></th></tr></thead>
       <tbody></tbody>
     </table>
     <div class="btnrow" style="margin-top:12px">
@@ -518,7 +509,6 @@ td select{padding:4px 6px;font-size:12px;width:auto}
   drawMascot("hd-secretary","typing","#8a8676");
 </script>
 <script src="knowledge_data.js"></script>
-<script src="research_data.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -31,6 +31,10 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px}
 .btn.orange{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600}
 .btn.small{padding:5px 11px;font-size:12px}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.cands{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.cand{padding:7px 11px;border:1.5px solid var(--line);border-radius:8px;background:#fff;font-size:12.5px;font-family:inherit;color:var(--ink);cursor:pointer;text-align:left;line-height:1.45}
+.cand:hover{border-color:var(--navy)}
+.cand.on{border-color:var(--navy);background:#eef1f7;font-weight:600}
 .persona-box{font-size:12px;background:#f4f6fa;border-radius:8px;padding:10px 12px;line-height:1.7;color:#33415e;margin-bottom:12px;display:none}
 .persona-box.show{display:block}
 .persona-box b{color:var(--navy)}
@@ -45,9 +49,6 @@ canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:10px;ba
 pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:12.5px;line-height:1.7;background:#fcfbf7;border:1px solid var(--line);border-radius:9px;padding:14px;max-height:48vh;overflow-y:auto}
 pre.empty{color:var(--sub)}
 .mode-note{font-size:11.5px;color:var(--sub);margin-top:6px;line-height:1.6}
-.bullet-row{display:flex;gap:6px;margin-bottom:6px}
-.bullet-row input{flex:1}
-.bullet-row .btn.small{flex-shrink:0}
 </style>
 <link rel="stylesheet" href="rpg-theme.css">
 </head>
@@ -73,7 +74,7 @@ pre.empty{color:var(--sub)}
 
   <div class="card">
     <h3>📝 完成した記事から見出し案を作る（任意）</h3>
-    <p class="hint" style="margin-bottom:10px">公開済みのNote記事の本文を貼ると、その内容から見出し・サブタイトル・バッジ・箇条書き項目の案を作るプロンプトを生成します。Claudeに貼って結果をもらったら、下の②の欄に貼り付けてください。</p>
+    <p class="hint" style="margin-bottom:10px">公開済みのNote記事の本文を貼ると、その内容から見出し・サブタイトル・バッジの案を作るプロンプトを生成します。Claudeに貼って結果をもらったら、下の②の欄に貼り付けてください。</p>
     <div class="field">
       <textarea id="article-text" rows="6" placeholder="公開済みのNote記事の本文をそのまま貼り付け（無料部分だけでOKです）"></textarea>
     </div>
@@ -83,7 +84,7 @@ pre.empty{color:var(--sub)}
       <pre id="out-headline" class="empty"></pre>
       <div class="field" style="margin-top:14px">
         <label>Claudeの回答を、そのままここに貼り付け</label>
-        <textarea id="headline-reply" rows="6" placeholder="メインタイトル：〜&#10;サブタイトル：〜&#10;バッジ：〜&#10;統計・数字：〜&#10;箇条書き1：〜&#10;箇条書き2：〜&#10;箇条書き3：〜"></textarea>
+        <textarea id="headline-reply" rows="4" placeholder="メインタイトル：〜&#10;サブタイトル：〜&#10;バッジ：〜&#10;統計・数字：〜"></textarea>
       </div>
       <button class="btn primary" id="btn-apply-headline" style="width:100%">↓ この内容を下の①②③に自動で反映する</button>
     </div>
@@ -108,7 +109,8 @@ pre.empty{color:var(--sub)}
   <div class="card">
     <h3>② 文言を選ぶ・整える</h3>
     <div class="field">
-      <label>メインタイトル</label>
+      <label>メインタイトル（候補をクリック or 直接編集）</label>
+      <div class="cands" id="main-cands"></div>
       <input id="main-title" placeholder="メインタイトル">
     </div>
     <div class="field">
@@ -118,17 +120,13 @@ pre.empty{color:var(--sub)}
     </div>
     <div class="field">
       <label>サブタイトル</label>
+      <div class="cands" id="sub-cands"></div>
       <input id="sub-title" placeholder="サブタイトル">
     </div>
     <div class="field">
       <label>バッジ（オレンジの帯に入る一言）</label>
+      <div class="cands" id="badge-cands"></div>
       <input id="badge-text" placeholder="バッジ文言">
-    </div>
-    <div class="field">
-      <label>箇条書き項目（任意・3〜5個・AI画像プロンプートのアイコン列に使われます）</label>
-      <div id="bullet-list"></div>
-      <button class="btn small" id="btn-add-bullet" type="button">＋ 項目を追加</button>
-      <p class="hint">記事内の要点・見出しを短く（10〜15字程度）入力してください。空欄でも生成できます</p>
     </div>
   </div>
 
